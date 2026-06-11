@@ -1,0 +1,26 @@
+services:
+  elasticsearch:
+    container_name: easymall-elasticsearch
+    image: 'elasticsearch:7.17.10'
+    environment:
+      - 'ELASTIC_PASSWORD=easymall@pass12'
+      - 'discovery.type=single-node'
+      - 'xpack.security.enabled=false'
+    ports:
+      - '9200:9200'
+      - '9300:9300'
+  postgres:
+    container_name: easymall-postgres
+    image: 'postgres:15'
+    environment:
+      - 'POSTGRES_DB=easymall'
+      - 'POSTGRES_USER=easymall'
+      - 'POSTGRES_PASSWORD=easymall@pass12'
+      - 'TZ=Asia/Ho_Chi_Minh'
+    ports:
+      - '5432:5432'
+  redis:
+    container_name: easymall-redis
+    image: 'redis:latest'
+    ports:
+      - '6379:6379'
