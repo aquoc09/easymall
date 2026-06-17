@@ -34,16 +34,16 @@ spring:
       client:
         registration:
           google:
-            client-id: ${GOOGLE_CLIENT_ID}
-            client-secret: ${GOOGLE_CLIENT_SECRET}
-            scope:
-              - email
-              - profile
+            # client-id: ${GOOGLE_CLIENT_ID}       # Future: social login
+            # client-secret: ${GOOGLE_CLIENT_SECRET}
+            # scope:
+            #   - email
+            #   - profile
 
 jwt:
   signerKey: ${JWT_SIGNER_KEY}
-  valid-duration: 60000 #miliseconds
-  refreshable-duration: 360000 #miliseconds
+  valid-duration: 900000        # 15 min (Access Token)
+  refreshable-duration: 604800000  # 7 days (Refresh Token)
 google:
   api:
     key: ${GOOGLE_API_KEY}
@@ -54,8 +54,8 @@ vn-pay:
   return-url: ${VNPAY_RETURN_URL}
   api-url: ${VNPAY_API_URL}
   ipn-url: ${VNPAY_IPN_URL}
-login-url:
-  google: ${GOOGLE_LOGIN_URL}
+# login-url:
+#   google: ${GOOGLE_LOGIN_URL}   # Future: social login
 
 logging:
   level:
