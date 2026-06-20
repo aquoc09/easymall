@@ -7,7 +7,7 @@ import lombok.Getter;
 @Getter
 public class ForgotPasswordRequest {
 
-    @NotBlank(message = "Email must not be blank")
-    @Email(message = "Invalid email format")
+    @NotBlank(message = "{validation.email.not-blank}")
+    @Email(message = "{validation.email.invalid}")
     private String email;
 }

@@ -1,4 +1,4 @@
-package com.quocnva.easymall.service;
+package com.quocnva.easymall.service.email;
 
 import com.quocnva.easymall.enums.OtpType;
 

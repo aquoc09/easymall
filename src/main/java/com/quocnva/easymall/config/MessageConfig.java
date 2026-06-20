@@ -1,0 +1,22 @@
+package com.quocnva.easymall.config;
+
+import org.springframework.context.MessageSource;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
+
+/**
+ * Bridges Jakarta Bean Validation with Spring's {@link MessageSource},
+ * allowing validation annotations to use {@code {key}} syntax
+ * that resolves from {@code messages.properties}.
+ */
+@Configuration
+public class MessageConfig {
+
+    @Bean
+    public LocalValidatorFactoryBean validator(MessageSource messageSource) {
+        LocalValidatorFactoryBean bean = new LocalValidatorFactoryBean();
+        bean.setValidationMessageSource(messageSource);
+        return bean;
+    }
+}

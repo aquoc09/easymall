@@ -1,6 +1,6 @@
-package com.quocnva.easymall.service.impl;
+package com.quocnva.easymall.service.role.impl;
 
-import com.quocnva.easymall.service.RoleService;
+import com.quocnva.easymall.service.role.RoleService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 

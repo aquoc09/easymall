@@ -6,9 +6,9 @@ import lombok.Getter;
 @Getter
 public class LogoutRequest {
 
-    @NotBlank(message = "Access token must not be blank")
+    @NotBlank(message = "{validation.accessToken.not-blank}")
     private String accessToken;
 
-    @NotBlank(message = "Refresh token must not be blank")
+    @NotBlank(message = "{validation.refreshToken.not-blank}")
     private String refreshToken;
 }

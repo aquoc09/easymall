@@ -6,15 +6,15 @@ import lombok.Getter;
 @Getter
 public class RegisterRequest {
 
-    @NotBlank(message = "Full name must not be blank")
+    @NotBlank(message = "{validation.fullName.not-blank}")
     private String fullName;
 
-    @NotBlank(message = "Email must not be blank")
-    @Email(message = "Invalid email format")
+    @NotBlank(message = "{validation.email.not-blank}")
+    @Email(message = "{validation.email.invalid}")
     private String email;
 
-    @NotBlank(message = "Password must not be blank")
-    @Size(min = 8, message = "Password must be at least 8 characters")
+    @NotBlank(message = "{validation.password.not-blank}")
+    @Size(min = 8, message = "{validation.password.size}")
     private String password;
 
     private String phone;

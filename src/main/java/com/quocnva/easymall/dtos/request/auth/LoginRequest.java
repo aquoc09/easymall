@@ -7,10 +7,10 @@ import lombok.Getter;
 @Getter
 public class LoginRequest {
 
-    @NotBlank(message = "Email must not be blank")
-    @Email(message = "Invalid email format")
+    @NotBlank(message = "{validation.email.not-blank}")
+    @Email(message = "{validation.email.invalid}")
     private String email;
 
-    @NotBlank(message = "Password must not be blank")
+    @NotBlank(message = "{validation.password.not-blank}")
     private String password;
 }

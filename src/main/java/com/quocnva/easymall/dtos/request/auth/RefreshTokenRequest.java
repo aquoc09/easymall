@@ -6,6 +6,6 @@ import lombok.Getter;
 @Getter
 public class RefreshTokenRequest {
 
-    @NotBlank(message = "Token must not be blank")
+    @NotBlank(message = "{validation.token.not-blank}")
     private String token;
 }

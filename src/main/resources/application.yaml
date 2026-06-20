@@ -39,11 +39,15 @@ spring:
             # scope:
             #   - email
             #   - profile
+  messages:
+    basename: messages
+    encoding: UTF-8
+    cache-duration: 3600
 
 jwt:
   signerKey: ${JWT_SIGNER_KEY}
-  valid-duration: 900000        # 15 min (Access Token)
-  refreshable-duration: 604800000  # 7 days (Refresh Token)
+  valid-duration: 900000 # 15 min (Access Token)
+  refreshable-duration: 604800000 # 7 days (Refresh Token)
 google:
   api:
     key: ${GOOGLE_API_KEY}

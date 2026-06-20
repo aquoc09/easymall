@@ -8,15 +8,15 @@ import lombok.Getter;
 @Getter
 public class ResetPasswordRequest {
 
-    @NotBlank(message = "Email must not be blank")
-    @Email(message = "Invalid email format")
+    @NotBlank(message = "{validation.email.not-blank}")
+    @Email(message = "{validation.email.invalid}")
     private String email;
 
-    @NotBlank(message = "OTP must not be blank")
-    @Size(min = 6, max = 6, message = "OTP must be exactly 6 digits")
+    @NotBlank(message = "{validation.otp.not-blank}")
+    @Size(min = 6, max = 6, message = "{validation.otp.size}")
     private String otp;
 
-    @NotBlank(message = "New password must not be blank")
-    @Size(min = 8, message = "Password must be at least 8 characters")
+    @NotBlank(message = "{validation.newPassword.not-blank}")
+    @Size(min = 8, message = "{validation.password.size}")
     private String newPassword;
 }

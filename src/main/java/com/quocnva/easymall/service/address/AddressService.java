@@ -1,4 +1,4 @@
-package com.quocnva.easymall.service;
+package com.quocnva.easymall.service.address;
 
 /**
  * Address management service interface.

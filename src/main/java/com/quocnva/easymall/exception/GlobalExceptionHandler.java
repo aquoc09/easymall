@@ -1,6 +1,7 @@
 package com.quocnva.easymall.exception;
 
 import com.quocnva.easymall.dtos.response.ApiResponse;
+import com.quocnva.easymall.util.Translator;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -13,11 +14,12 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(AppException.class)
     public ResponseEntity<ApiResponse<Void>> handleAppException(AppException ex) {
+        String message = Translator.toLocale(ex.getMessageKey());
         return ResponseEntity
                 .status(ex.getHttpStatus())
                 .body(ApiResponse.<Void>builder()
                         .code(ex.getCode())
-                        .message(ex.getMessage())
+                        .message(message)
                         .build());
     }
 
@@ -41,7 +43,7 @@ public class GlobalExceptionHandler {
                 .status(error.getHttpStatus())
                 .body(ApiResponse.<Void>builder()
                         .code(error.getCode())
-                        .message(error.getMessage())
+                        .message(Translator.toLocale(error.getMessageKey()))
                         .build());
     }
 }

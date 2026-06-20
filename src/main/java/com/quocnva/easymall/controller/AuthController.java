@@ -5,7 +5,12 @@ import com.quocnva.easymall.dtos.response.ApiResponse;
 import com.quocnva.easymall.dtos.response.auth.AuthResponse;
 import com.quocnva.easymall.dtos.response.auth.IntrospectResponse;
 import com.quocnva.easymall.dtos.response.auth.UserResponse;
-import com.quocnva.easymall.service.AuthService;
+import com.quocnva.easymall.service.user.UserService;
+import com.quocnva.easymall.service.auth.AuthenticationService;
+import com.quocnva.easymall.service.auth.PasswordResetService;
+import com.quocnva.easymall.service.auth.RegistrationService;
+import com.quocnva.easymall.service.auth.TokenService;
+import com.quocnva.easymall.util.Translator;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -16,17 +21,22 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 public class AuthController {
 
-    private final AuthService authService;
+    private final RegistrationService registrationService;
+    private final AuthenticationService authenticationService;
+    private final TokenService tokenService;
+    private final PasswordResetService passwordResetService;
+    private final UserService userService;
 
     /**
      * Step 1 of registration — stores pending user + sends OTP email.
+     * Rate limited to one per 60 seconds per email.
      * No DB write occurs here.
      */
     @PostMapping("/register")
     public ApiResponse<Void> register(@Valid @RequestBody RegisterRequest request) {
-        authService.register(request);
+        registrationService.register(request);
         return ApiResponse.<Void>builder()
-                .message("Registration successful. Please check your email for the OTP.")
+                .message(Translator.toLocale("success.register"))
                 .build();
     }
 
@@ -35,9 +45,9 @@ public class AuthController {
      */
     @PostMapping("/active")
     public ApiResponse<Void> activateAccount(@Valid @RequestBody ActivateAccountRequest request) {
-        authService.activateAccount(request);
+        registrationService.activateAccount(request);
         return ApiResponse.<Void>builder()
-                .message("Account activated successfully.")
+                .message(Translator.toLocale("success.activate-account"))
                 .build();
     }
 
@@ -48,9 +58,9 @@ public class AuthController {
     @PostMapping("/resend-otp")
     public ApiResponse<Void> resendOtp(@Valid @RequestBody ResendOtpRequest request,
                                        HttpServletRequest httpRequest) {
-        authService.resendOtp(request, httpRequest.getRemoteAddr());
+        registrationService.resendOtp(request, httpRequest.getRemoteAddr());
         return ApiResponse.<Void>builder()
-                .message("OTP resent successfully.")
+                .message(Translator.toLocale("success.resend-otp"))
                 .build();
     }
 
@@ -59,7 +69,7 @@ public class AuthController {
      */
     @PostMapping("/login")
     public ApiResponse<AuthResponse> login(@Valid @RequestBody LoginRequest request) {
-        AuthResponse response = authService.login(request);
+        AuthResponse response = authenticationService.login(request);
         return ApiResponse.<AuthResponse>builder()
                 .result(response)
                 .build();
@@ -70,9 +80,9 @@ public class AuthController {
      */
     @PostMapping("/logout")
     public ApiResponse<Void> logout(@Valid @RequestBody LogoutRequest request) {
-        authService.logout(request);
+        authenticationService.logout(request);
         return ApiResponse.<Void>builder()
-                .message("Logged out successfully.")
+                .message(Translator.toLocale("success.logout"))
                 .build();
     }
 
@@ -81,7 +91,7 @@ public class AuthController {
      */
     @PostMapping("/refresh")
     public ApiResponse<AuthResponse> refresh(@Valid @RequestBody RefreshTokenRequest request) {
-        AuthResponse response = authService.refresh(request);
+        AuthResponse response = tokenService.refresh(request);
         return ApiResponse.<AuthResponse>builder()
                 .result(response)
                 .build();
@@ -92,7 +102,7 @@ public class AuthController {
      */
     @PostMapping("/introspect")
     public ApiResponse<IntrospectResponse> introspect(@Valid @RequestBody IntrospectRequest request) {
-        IntrospectResponse response = authService.introspect(request);
+        IntrospectResponse response = tokenService.introspect(request);
         return ApiResponse.<IntrospectResponse>builder()
                 .result(response)
                 .build();
@@ -104,9 +114,9 @@ public class AuthController {
     @PostMapping("/forgot-password")
     public ApiResponse<Void> forgotPassword(@Valid @RequestBody ForgotPasswordRequest request,
                                             HttpServletRequest httpRequest) {
-        authService.forgotPassword(request, httpRequest.getRemoteAddr());
+        passwordResetService.forgotPassword(request, httpRequest.getRemoteAddr());
         return ApiResponse.<Void>builder()
-                .message("OTP sent to your email.")
+                .message(Translator.toLocale("success.forgot-password"))
                 .build();
     }
 
@@ -115,9 +125,9 @@ public class AuthController {
      */
     @PostMapping("/reset-password")
     public ApiResponse<Void> resetPassword(@Valid @RequestBody ResetPasswordRequest request) {
-        authService.resetPassword(request);
+        passwordResetService.resetPassword(request);
         return ApiResponse.<Void>builder()
-                .message("Password reset successfully.")
+                .message(Translator.toLocale("success.reset-password"))
                 .build();
     }
 
@@ -127,7 +137,7 @@ public class AuthController {
      */
     @GetMapping("/me")
     public ApiResponse<UserResponse> getCurrentUser() {
-        UserResponse response = authService.getCurrentUser();
+        UserResponse response = userService.getCurrentUser();
         return ApiResponse.<UserResponse>builder()
                 .result(response)
                 .build();

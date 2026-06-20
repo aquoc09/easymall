@@ -9,10 +9,10 @@ import lombok.Getter;
 @Getter
 public class ResendOtpRequest {
 
-    @NotBlank(message = "Email must not be blank")
-    @Email(message = "Invalid email format")
+    @NotBlank(message = "{validation.email.not-blank}")
+    @Email(message = "{validation.email.invalid}")
     private String email;
 
-    @NotNull(message = "OTP type must not be null")
+    @NotNull(message = "{validation.otp-type.not-null}")
     private OtpType type;
 }

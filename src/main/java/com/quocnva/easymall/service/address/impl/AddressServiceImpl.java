@@ -1,6 +1,6 @@
-package com.quocnva.easymall.service.impl;
+package com.quocnva.easymall.service.address.impl;
 
-import com.quocnva.easymall.service.AddressService;
+import com.quocnva.easymall.service.address.AddressService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
