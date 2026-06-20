@@ -43,6 +43,14 @@ public enum ErrorCode {
     PERMISSION_NOT_FOUND(5001, "error.permission-not-found", HttpStatus.NOT_FOUND),
     PERMISSION_ALREADY_EXISTS(5002, "error.permission-already-exists", HttpStatus.CONFLICT),
     PERMISSION_IN_USE(5003, "error.permission-in-use", HttpStatus.CONFLICT),
+
+    // ── Category ─────────────────────────────────────────────────────────
+    CATEGORY_NOT_FOUND(6001, "error.category-not-found", HttpStatus.NOT_FOUND),
+    CATEGORY_CODE_ALREADY_EXISTS(6002, "error.category-code-already-exists", HttpStatus.CONFLICT),
+    PARENT_CATEGORY_NOT_FOUND(6003, "error.parent-category-not-found", HttpStatus.BAD_REQUEST),
+    MAX_LEVEL_EXCEEDED(6004, "error.max-level-exceeded", HttpStatus.BAD_REQUEST),
+    CATEGORY_HAS_CHILDREN(6005, "error.category-has-children", HttpStatus.CONFLICT),
+    CATEGORY_IN_USE(6006, "error.category-in-use", HttpStatus.CONFLICT),
     ;
 
 
