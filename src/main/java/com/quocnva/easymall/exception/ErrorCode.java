@@ -33,6 +33,16 @@ public enum ErrorCode {
     REFRESH_TOKEN_INVALID(1008, "error.refresh-token-invalid", HttpStatus.UNAUTHORIZED),
     PENDING_REGISTRATION_NOT_FOUND(1009, "error.pending-registration-not-found", HttpStatus.NOT_FOUND),
     ACCOUNT_ALREADY_ACTIVE(1010, "error.account-already-active", HttpStatus.CONFLICT),
+
+    // ── Role ─────────────────────────────────────────────────────────────
+    ROLE_NOT_FOUND(4001, "error.role-not-found", HttpStatus.NOT_FOUND),
+    ROLE_ALREADY_EXISTS(4002, "error.role-already-exists", HttpStatus.CONFLICT),
+    ROLE_PROTECTED(4003, "error.role-protected", HttpStatus.FORBIDDEN),
+
+    // ── Permission ───────────────────────────────────────────────────────
+    PERMISSION_NOT_FOUND(5001, "error.permission-not-found", HttpStatus.NOT_FOUND),
+    PERMISSION_ALREADY_EXISTS(5002, "error.permission-already-exists", HttpStatus.CONFLICT),
+    PERMISSION_IN_USE(5003, "error.permission-in-use", HttpStatus.CONFLICT),
     ;
 
 

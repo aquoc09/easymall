@@ -3,6 +3,7 @@ package com.quocnva.easymall.exception;
 import com.quocnva.easymall.dtos.response.ApiResponse;
 import com.quocnva.easymall.util.Translator;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -11,6 +12,17 @@ import java.util.stream.Collectors;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<ApiResponse<Void>> handleAccessDeniedException(AccessDeniedException ex) {
+        ErrorCode error = ErrorCode.ACCESS_DENIED;
+        return ResponseEntity
+                .status(error.getHttpStatus())
+                .body(ApiResponse.<Void>builder()
+                        .code(error.getCode())
+                        .message(Translator.toLocale(error.getMessageKey()))
+                        .build());
+    }
 
     @ExceptionHandler(AppException.class)
     public ResponseEntity<ApiResponse<Void>> handleAppException(AppException ex) {
