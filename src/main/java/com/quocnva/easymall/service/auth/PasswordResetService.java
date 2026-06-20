@@ -1,7 +1,6 @@
 package com.quocnva.easymall.service.auth;
 
-import com.quocnva.easymall.dtos.request.auth.ForgotPasswordRequest;
-import com.quocnva.easymall.dtos.request.auth.ResetPasswordRequest;
+import com.quocnva.easymall.dtos.request.auth.*;
 
 /**
  * Handles the forgot-password → OTP verify → reset-password flow.

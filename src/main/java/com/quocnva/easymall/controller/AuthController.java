@@ -57,7 +57,7 @@ public class AuthController {
      */
     @PostMapping("/resend-otp")
     public ApiResponse<Void> resendOtp(@Valid @RequestBody ResendOtpRequest request,
-                                       HttpServletRequest httpRequest) {
+            HttpServletRequest httpRequest) {
         registrationService.resendOtp(request, httpRequest.getRemoteAddr());
         return ApiResponse.<Void>builder()
                 .message(Translator.toLocale("success.resend-otp"))
@@ -113,7 +113,7 @@ public class AuthController {
      */
     @PostMapping("/forgot-password")
     public ApiResponse<Void> forgotPassword(@Valid @RequestBody ForgotPasswordRequest request,
-                                            HttpServletRequest httpRequest) {
+            HttpServletRequest httpRequest) {
         passwordResetService.forgotPassword(request, httpRequest.getRemoteAddr());
         return ApiResponse.<Void>builder()
                 .message(Translator.toLocale("success.forgot-password"))

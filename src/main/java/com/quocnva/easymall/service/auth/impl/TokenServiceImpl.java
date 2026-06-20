@@ -1,8 +1,7 @@
 package com.quocnva.easymall.service.auth.impl;
 
 import com.nimbusds.jwt.SignedJWT;
-import com.quocnva.easymall.dtos.request.auth.IntrospectRequest;
-import com.quocnva.easymall.dtos.request.auth.RefreshTokenRequest;
+import com.quocnva.easymall.dtos.request.auth.*;
 import com.quocnva.easymall.dtos.response.auth.AuthResponse;
 import com.quocnva.easymall.dtos.response.auth.IntrospectResponse;
 import com.quocnva.easymall.entity.TokenEntity;

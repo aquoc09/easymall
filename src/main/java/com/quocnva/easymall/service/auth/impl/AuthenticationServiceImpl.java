@@ -1,7 +1,6 @@
 package com.quocnva.easymall.service.auth.impl;
 
-import com.quocnva.easymall.dtos.request.auth.LoginRequest;
-import com.quocnva.easymall.dtos.request.auth.LogoutRequest;
+import com.quocnva.easymall.dtos.request.auth.*;
 import com.quocnva.easymall.dtos.response.auth.AuthResponse;
 import com.quocnva.easymall.entity.UserEntity;
 import com.quocnva.easymall.exception.AppException;

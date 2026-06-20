@@ -2,9 +2,7 @@ package com.quocnva.easymall.service.auth.impl;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.quocnva.easymall.dtos.request.auth.ActivateAccountRequest;
-import com.quocnva.easymall.dtos.request.auth.RegisterRequest;
-import com.quocnva.easymall.dtos.request.auth.ResendOtpRequest;
+import com.quocnva.easymall.dtos.request.auth.*;
 import com.quocnva.easymall.entity.RoleEntity;
 import com.quocnva.easymall.entity.UserEntity;
 import com.quocnva.easymall.enums.OtpType;

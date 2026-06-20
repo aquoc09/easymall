@@ -1,7 +1,6 @@
 package com.quocnva.easymall.service.auth.impl;
 
-import com.quocnva.easymall.dtos.request.auth.ForgotPasswordRequest;
-import com.quocnva.easymall.dtos.request.auth.ResetPasswordRequest;
+import com.quocnva.easymall.dtos.request.auth.*;
 import com.quocnva.easymall.entity.UserEntity;
 import com.quocnva.easymall.enums.OtpType;
 import com.quocnva.easymall.exception.AppException;

@@ -1,8 +1,6 @@
 package com.quocnva.easymall.service.auth;
 
-import com.quocnva.easymall.dtos.request.auth.ActivateAccountRequest;
-import com.quocnva.easymall.dtos.request.auth.RegisterRequest;
-import com.quocnva.easymall.dtos.request.auth.ResendOtpRequest;
+import com.quocnva.easymall.dtos.request.auth.*;
 
 /**
  * Handles the two-step registration flow (register → OTP verify → activate)
