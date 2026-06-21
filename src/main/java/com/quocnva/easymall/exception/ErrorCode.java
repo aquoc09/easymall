@@ -51,6 +51,15 @@ public enum ErrorCode {
     MAX_LEVEL_EXCEEDED(6004, "error.max-level-exceeded", HttpStatus.BAD_REQUEST),
     CATEGORY_HAS_CHILDREN(6005, "error.category-has-children", HttpStatus.CONFLICT),
     CATEGORY_IN_USE(6006, "error.category-in-use", HttpStatus.CONFLICT),
+
+    // ── Product ──────────────────────────────────────────────────────────
+    PRODUCT_NOT_FOUND(7001, "error.product-not-found", HttpStatus.NOT_FOUND),
+    PRODUCT_SLUG_ALREADY_EXISTS(7002, "error.product-slug-already-exists", HttpStatus.CONFLICT),
+    PRODUCT_VARIANT_NOT_FOUND(7003, "error.product-variant-not-found", HttpStatus.NOT_FOUND),
+    SKU_ALREADY_EXISTS(7004, "error.sku-already-exists", HttpStatus.CONFLICT),
+    CATEGORY_NOT_FOUND_FOR_PRODUCT(7005, "error.category-not-found-for-product", HttpStatus.BAD_REQUEST),
+    INVALID_STOCK_QUANTITY(7006, "error.invalid-stock-quantity", HttpStatus.BAD_REQUEST),
+    INVALID_JSONB_FORMAT(7007, "error.invalid-jsonb-format", HttpStatus.BAD_REQUEST),
     ;
 
 

@@ -11,6 +11,14 @@ import java.util.ArrayList;
 @Component
 public class CategoryMapper {
 
+    /**
+     * Cast Integer → Short an toàn (DB schema dùng SMALLINT = int2).
+     * DTO vẫn giữ Integer để API consumer không bị phá vỡ.
+     */
+    private Short toShort(Integer value) {
+        return value == null ? null : value.shortValue();
+    }
+
     public CategoryEntity toEntity(CategoryCreateRequest request) {
         if (request == null) {
             return null;
@@ -20,7 +28,7 @@ public class CategoryMapper {
                 .categoryName(request.getCategoryName())
                 .parentId(request.getParentId())
                 .iconUrl(request.getIconUrl())
-                .targetDemographic(request.getTargetDemographic())
+                .targetDemographic(toShort(request.getTargetDemographic()))
                 .categoryType(request.getCategoryType())
                 .displayOrder(request.getDisplayOrder())
                 .build();
@@ -35,13 +43,13 @@ public class CategoryMapper {
             entity.setCategoryName(request.getCategoryName());
         }
         if (request.getCategoryStatus() != null) {
-            entity.setCategoryStatus(request.getCategoryStatus());
+            entity.setCategoryStatus(toShort(request.getCategoryStatus()));
         }
         if (request.getIconUrl() != null) {
             entity.setIconUrl(request.getIconUrl());
         }
         if (request.getTargetDemographic() != null) {
-            entity.setTargetDemographic(request.getTargetDemographic());
+            entity.setTargetDemographic(toShort(request.getTargetDemographic()));
         }
         if (request.getCategoryType() != null) {
             entity.setCategoryType(request.getCategoryType());
@@ -60,11 +68,11 @@ public class CategoryMapper {
                 .categoryId(entity.getCategoryId())
                 .categoryCode(entity.getCategoryCode())
                 .categoryName(entity.getCategoryName())
-                .categoryStatus(entity.getCategoryStatus())
+                .categoryStatus(entity.getCategoryStatus() != null ? entity.getCategoryStatus().intValue() : null)
                 .level(entity.getLevel())
                 .parentId(entity.getParentId())
                 .iconUrl(entity.getIconUrl())
-                .targetDemographic(entity.getTargetDemographic())
+                .targetDemographic(entity.getTargetDemographic() != null ? entity.getTargetDemographic().intValue() : null)
                 .categoryType(entity.getCategoryType())
                 .displayOrder(entity.getDisplayOrder())
                 .children(new ArrayList<>())

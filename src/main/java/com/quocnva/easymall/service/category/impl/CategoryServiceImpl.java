@@ -8,6 +8,7 @@ import com.quocnva.easymall.exception.AppException;
 import com.quocnva.easymall.exception.ErrorCode;
 import com.quocnva.easymall.mapper.CategoryMapper;
 import com.quocnva.easymall.repository.CategoryRepository;
+import com.quocnva.easymall.repository.ProductRepository;
 import com.quocnva.easymall.service.category.CategoryService;
 import com.quocnva.easymall.util.SlugUtils;
 import lombok.RequiredArgsConstructor;
@@ -25,13 +26,14 @@ public class CategoryServiceImpl implements CategoryService {
 
     private final CategoryRepository categoryRepository;
     private final CategoryMapper categoryMapper;
+    private final ProductRepository productRepository;
 
     @Override
     @Transactional(readOnly = true)
     public List<CategoryResponse> getCategoryTree(boolean isPublic) {
         List<CategoryEntity> entities;
         if (isPublic) {
-            entities = categoryRepository.findByCategoryStatusOrderByLevelAscDisplayOrderAsc(1);
+            entities = categoryRepository.findByCategoryStatusOrderByLevelAscDisplayOrderAsc((short) 1);
         } else {
             entities = categoryRepository.findAllByOrderByLevelAscDisplayOrderAsc();
         }
@@ -70,7 +72,7 @@ public class CategoryServiceImpl implements CategoryService {
 
         CategoryEntity entity = categoryMapper.toEntity(request);
         entity.setCategoryCode(categoryCode);
-        entity.setCategoryStatus(1); // Mặc định hiển thị
+        entity.setCategoryStatus((short) 1); // Mặc định hiển thị
 
         if (request.getParentId() == null) {
             entity.setLevel(1);
@@ -132,7 +134,7 @@ public class CategoryServiceImpl implements CategoryService {
         
         if (!toHide.isEmpty()) {
             for (CategoryEntity child : toHide) {
-                child.setCategoryStatus(0);
+                child.setCategoryStatus((short) 0);
             }
             categoryRepository.saveAll(toHide);
         }
@@ -171,7 +173,6 @@ public class CategoryServiceImpl implements CategoryService {
     }
 
     private boolean checkCategoryHasProducts(Long categoryId) {
-        // TODO: Implement actual product check when Product module is available.
-        return false;
+        return productRepository.existsByCategoryId(categoryId);
     }
 }

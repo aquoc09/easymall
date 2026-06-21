@@ -32,10 +32,11 @@ public class CategoryEntity {
     @Column(name = "category_name", nullable = false, length = 200)
     private String categoryName;
 
-    @Column(name = "category_status", columnDefinition = "SMALLINT DEFAULT 1")
-    private Integer categoryStatus;
+    // SMALLINT (int2) trong DB → dùng Short ở Java, KHÔNG dùng columnDefinition
+    @Column(name = "category_status")
+    private Short categoryStatus;
 
-    @Column(name = "level", columnDefinition = "INT DEFAULT 1")
+    @Column(name = "level")
     private Integer level;
 
     @Column(name = "parent_id")
@@ -44,13 +45,14 @@ public class CategoryEntity {
     @Column(name = "icon_url", length = 500)
     private String iconUrl;
 
-    @Column(name = "target_demographic", columnDefinition = "SMALLINT")
-    private Integer targetDemographic;
+    // SMALLINT (int2) trong DB → Short
+    @Column(name = "target_demographic")
+    private Short targetDemographic;
 
     @Column(name = "category_type", nullable = false, length = 30)
     private String categoryType;
 
-    @Column(name = "display_order", nullable = false, columnDefinition = "INT DEFAULT 0")
+    @Column(name = "display_order", nullable = false)
     private Integer displayOrder;
 
 }

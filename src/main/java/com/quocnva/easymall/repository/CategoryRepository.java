@@ -15,7 +15,7 @@ public interface CategoryRepository extends JpaRepository<CategoryEntity, Long> 
 
     long countByParentId(Long parentId);
     
-    List<CategoryEntity> findByCategoryStatusOrderByLevelAscDisplayOrderAsc(Integer categoryStatus);
+    List<CategoryEntity> findByCategoryStatusOrderByLevelAscDisplayOrderAsc(Short categoryStatus);
     
     List<CategoryEntity> findAllByOrderByLevelAscDisplayOrderAsc();
 

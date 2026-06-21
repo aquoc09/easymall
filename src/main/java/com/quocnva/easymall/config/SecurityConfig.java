@@ -35,6 +35,11 @@ public class SecurityConfig {
             "/api/v1/auth/introspect",
             "/api/v1/auth/forgot-password",
             "/api/v1/auth/reset-password",
+            // Product public storefront — product:read open to all
+            "/api/v1/products/public",
+            "/api/v1/products/public/**",
+            // Category public storefront
+            "/api/v1/categories/public",
     };
 
     @Bean
