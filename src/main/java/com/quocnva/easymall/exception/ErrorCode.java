@@ -60,6 +60,13 @@ public enum ErrorCode {
     CATEGORY_NOT_FOUND_FOR_PRODUCT(7005, "error.category-not-found-for-product", HttpStatus.BAD_REQUEST),
     INVALID_STOCK_QUANTITY(7006, "error.invalid-stock-quantity", HttpStatus.BAD_REQUEST),
     INVALID_JSONB_FORMAT(7007, "error.invalid-jsonb-format", HttpStatus.BAD_REQUEST),
+
+    // ── Cart ─────────────────────────────────────────────────────────────
+    CART_NOT_FOUND(8001, "error.cart-not-found", HttpStatus.NOT_FOUND),
+    CART_ITEM_NOT_FOUND(8002, "error.cart-item-not-found", HttpStatus.NOT_FOUND),
+    INSUFFICIENT_STOCK(8003, "error.insufficient-stock", HttpStatus.BAD_REQUEST),
+    MAX_ORDER_QUANTITY_EXCEEDED(8004, "error.max-order-quantity-exceeded", HttpStatus.BAD_REQUEST),
+    PRODUCT_BANNED(8005, "error.product-banned", HttpStatus.BAD_REQUEST),
     ;
 
 
