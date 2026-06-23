@@ -67,6 +67,25 @@ public enum ErrorCode {
     INSUFFICIENT_STOCK(8003, "error.insufficient-stock", HttpStatus.BAD_REQUEST),
     MAX_ORDER_QUANTITY_EXCEEDED(8004, "error.max-order-quantity-exceeded", HttpStatus.BAD_REQUEST),
     PRODUCT_BANNED(8005, "error.product-banned", HttpStatus.BAD_REQUEST),
+
+    // ── Coupon ───────────────────────────────────────────────────────────────
+    COUPON_NOT_FOUND(9001, "error.coupon-not-found", HttpStatus.NOT_FOUND),
+    COUPON_CODE_ALREADY_EXISTS(9002, "error.coupon-code-already-exists", HttpStatus.CONFLICT),
+    COUPON_EXPIRED(9003, "error.coupon-expired", HttpStatus.BAD_REQUEST),
+    COUPON_EXHAUSTED(9004, "error.coupon-exhausted", HttpStatus.BAD_REQUEST),
+    COUPON_USAGE_LIMIT_EXCEEDED(9005, "error.coupon-usage-limit-exceeded", HttpStatus.BAD_REQUEST),
+    INADEQUATE_ORDER_VALUE(9006, "error.inadequate-order-value", HttpStatus.BAD_REQUEST),
+    BUDGET_EXCEEDED(9007, "error.budget-exceeded", HttpStatus.BAD_REQUEST),
+
+    // ── Order ─────────────────────────────────────────────────────────────────
+    ORDER_NOT_FOUND(10001, "error.order-not-found", HttpStatus.NOT_FOUND),
+    ORDER_STATE_CONFLICT(10002, "error.order-state-conflict", HttpStatus.CONFLICT),
+    CANCELLATION_NOT_ALLOWED(10003, "error.cancellation-not-allowed", HttpStatus.BAD_REQUEST),
+    INVALID_ORDER_STATE(10004, "error.invalid-order-state", HttpStatus.BAD_REQUEST),
+    CHECKOUT_CONCURRENCY(10005, "error.checkout-concurrency", HttpStatus.CONFLICT),
+    ORDER_OWNERSHIP_DENIED(10006, "error.order-ownership-denied", HttpStatus.FORBIDDEN),
+    CART_ITEMS_NOT_FOUND(10007, "error.cart-items-not-found", HttpStatus.BAD_REQUEST),
+    ADDRESS_NOT_FOUND(10008, "error.address-not-found", HttpStatus.NOT_FOUND),
     ;
 
 

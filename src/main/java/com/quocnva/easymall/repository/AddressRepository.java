@@ -13,4 +13,7 @@ public interface AddressRepository extends JpaRepository<AddressEntity, Long> {
     List<AddressEntity> findAllByUserUserId(Long userId);
 
     Optional<AddressEntity> findByUserUserIdAndIsDefaultTrue(Long userId);
+
+    /** Validate address ownership khi checkout */
+    Optional<AddressEntity> findByAddressIdAndUser_UserId(Long addressId, Long userId);
 }

@@ -66,6 +66,10 @@ public class ProductVariantEntity {
     @Builder.Default
     private List<InventoryTransactionEntity> inventoryTransactions = new ArrayList<>();
 
+    @OneToMany(mappedBy = "variant", fetch = FetchType.LAZY)
+    @Builder.Default
+    private List<OrderDetailEntity> orderDetails = new ArrayList<>();
+
     @PrePersist
     protected void onCreate() {
         if (stockQuantity == null) stockQuantity = 0;
