@@ -36,8 +36,9 @@ public class ProductVariantEntity {
      * Ví dụ: {"color": "đỏ", "size": "M"}
      * Lưu dạng String JSON, parse trong service khi cần.
      */
+    @org.hibernate.annotations.JdbcTypeCode(org.hibernate.type.SqlTypes.JSON)
     @Column(name = "variant_attributes", nullable = false, columnDefinition = "JSONB")
-    private String variantAttributes;
+    private java.util.Map<String, String> variantAttributes;
 
     @Column(name = "sku_code", nullable = false, unique = true, length = 50)
     private String skuCode;

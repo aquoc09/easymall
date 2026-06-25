@@ -21,37 +21,41 @@ import java.util.Date;
 import java.util.List;
 
 /**
- * Intercepts every request once, extracts the Bearer AT from the Authorization header,
- * validates it (signature + expiry + Redis blacklist), and populates the SecurityContext.
+ * Intercepts every request once, extracts the Bearer AT from the Authorization
+ * header,
+ * validates it (signature + expiry + Redis blacklist), and populates the
+ * SecurityContext.
  *
- * If the token is missing or invalid, the filter simply continues without authentication.
- * Spring Security's authorization rules then reject the request if the endpoint requires auth.
+ * If the token is missing or invalid, the filter simply continues without
+ * authentication.
+ * Spring Security's authorization rules then reject the request if the endpoint
+ * requires auth.
  */
 @Component
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private static final String BEARER_PREFIX = "Bearer ";
-    private static final String AUTH_HEADER   = "Authorization";
+    private static final String AUTH_HEADER = "Authorization";
 
     private final JwtUtil jwtUtil;
     private final RedisTemplate<String, String> redisTemplate;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request,
-                                    HttpServletResponse response,
-                                    FilterChain filterChain) throws ServletException, IOException {
+            HttpServletResponse response,
+            FilterChain filterChain) throws ServletException, IOException {
         String token = extractToken(request);
 
         if (StringUtils.hasText(token)) {
             try {
                 SignedJWT parsed = jwtUtil.parseToken(token);
-                String jti   = parsed.getJWTClaimsSet().getJWTID();
-                Date   exp   = parsed.getJWTClaimsSet().getExpirationTime();
+                String jti = parsed.getJWTClaimsSet().getJWTID();
+                Date exp = parsed.getJWTClaimsSet().getExpirationTime();
                 String email = parsed.getJWTClaimsSet().getSubject();
                 String scope = (String) parsed.getJWTClaimsSet().getClaim("scope");
 
-                boolean notExpired     = exp != null && exp.after(new Date());
+                boolean notExpired = exp != null && exp.after(new Date());
                 boolean notBlacklisted = Boolean.FALSE.equals(
                         redisTemplate.hasKey(RedisKeyUtil.blacklistAtKey(jti)));
 
@@ -60,8 +64,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                             ? List.of(new SimpleGrantedAuthority(scope))
                             : List.of();
 
-                    UsernamePasswordAuthenticationToken auth =
-                            new UsernamePasswordAuthenticationToken(email, null, authorities);
+                    UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(email, null,
+                            authorities);
                     SecurityContextHolder.getContext().setAuthentication(auth);
                 }
             } catch (Exception ignored) {

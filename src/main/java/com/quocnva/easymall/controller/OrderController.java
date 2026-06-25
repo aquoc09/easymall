@@ -14,6 +14,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
@@ -31,6 +32,7 @@ public class OrderController {
      * HttpServletRequest được inject tự động bởi Spring — dùng để extract DeviceSession.
      */
     @PostMapping("/checkout")
+    @PreAuthorize("@permissionChecker.has('order:create')")
     public ApiResponse<CheckoutResponse> checkout(
             @Valid @RequestBody CheckoutRequest request,
             Authentication authentication,
@@ -42,6 +44,7 @@ public class OrderController {
     }
 
     @GetMapping("/my")
+    @PreAuthorize("@permissionChecker.has('order:view')")
     public ApiResponse<Page<OrderSummaryResponse>> getMyOrders(
             Authentication authentication,
             @PageableDefault(size = 10, sort = "orderId") Pageable pageable) {
@@ -51,6 +54,7 @@ public class OrderController {
     }
 
     @GetMapping("/my/{orderId}")
+    @PreAuthorize("@permissionChecker.has('order:view')")
     public ApiResponse<OrderResponse> getMyOrderDetail(
             @PathVariable Long orderId,
             Authentication authentication) {
@@ -60,6 +64,7 @@ public class OrderController {
     }
 
     @PutMapping("/my/{orderId}/cancel")
+    @PreAuthorize("@permissionChecker.has('order:manage')")
     public ApiResponse<Void> cancelMyOrder(
             @PathVariable Long orderId,
             @Valid @RequestBody OrderCancelRequest request,
@@ -73,6 +78,7 @@ public class OrderController {
     // ── ADMIN ──────────────────────────────────────────────────────────────
 
     @GetMapping
+    @PreAuthorize("@permissionChecker.has('order:admin')")
     public ApiResponse<Page<OrderSummaryResponse>> getAllOrders(
             @PageableDefault(size = 20, sort = "orderId") Pageable pageable) {
         return ApiResponse.<Page<OrderSummaryResponse>>builder()
@@ -81,6 +87,7 @@ public class OrderController {
     }
 
     @GetMapping("/{orderId}")
+    @PreAuthorize("@permissionChecker.has('order:admin')")
     public ApiResponse<OrderResponse> getOrderDetail(@PathVariable Long orderId) {
         return ApiResponse.<OrderResponse>builder()
                 .result(orderService.getOrderDetail(orderId))
@@ -88,6 +95,7 @@ public class OrderController {
     }
 
     @PutMapping("/{orderId}/status")
+    @PreAuthorize("@permissionChecker.has('order:admin')")
     public ApiResponse<Void> updateOrderStatus(
             @PathVariable Long orderId,
             @Valid @RequestBody OrderStatusUpdateRequest request) {

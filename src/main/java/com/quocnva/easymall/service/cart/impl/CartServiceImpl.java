@@ -41,8 +41,13 @@ public class CartServiceImpl implements CartService {
     @Transactional(readOnly = true)
     public CartResponse getCart(String email) {
         UserEntity user = resolveUser(email);
-        CartEntity cart = getOrCreateCart(user);
-        return buildCartResponse(cart);
+        return cartRepository.findByUser_UserId(user.getUserId())
+                .map(this::buildCartResponse)
+                .orElseGet(() -> CartResponse.builder()
+                        .cartId(null)
+                        .totalAmount(java.math.BigDecimal.ZERO)
+                        .items(java.util.Collections.emptyList())
+                        .build());
     }
 
     // ══════════════════════════════════════════════════════════════════

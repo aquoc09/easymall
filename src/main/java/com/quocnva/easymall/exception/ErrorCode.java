@@ -86,6 +86,7 @@ public enum ErrorCode {
     ORDER_OWNERSHIP_DENIED(10006, "error.order-ownership-denied", HttpStatus.FORBIDDEN),
     CART_ITEMS_NOT_FOUND(10007, "error.cart-items-not-found", HttpStatus.BAD_REQUEST),
     ADDRESS_NOT_FOUND(10008, "error.address-not-found", HttpStatus.NOT_FOUND),
+    FRAUD_DETECTED(10009, "error.fraud-detected", HttpStatus.FORBIDDEN),
     ;
 
 

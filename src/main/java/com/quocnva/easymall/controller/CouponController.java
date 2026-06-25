@@ -12,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
@@ -25,6 +26,7 @@ public class CouponController {
     // ── ADMIN CRUD ─────────────────────────────────────────────────────────
 
     @PostMapping
+    @PreAuthorize("@permissionChecker.has('coupon:manage')")
     public ApiResponse<CouponResponse> createCoupon(
             @Valid @RequestBody CouponCreateRequest request) {
         return ApiResponse.<CouponResponse>builder()
@@ -34,6 +36,7 @@ public class CouponController {
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("@permissionChecker.has('coupon:manage')")
     public ApiResponse<CouponResponse> updateCoupon(
             @PathVariable Long id,
             @Valid @RequestBody CouponUpdateRequest request) {
@@ -44,6 +47,7 @@ public class CouponController {
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("@permissionChecker.has('coupon:manage')")
     public ApiResponse<Void> deactivateCoupon(@PathVariable Long id) {
         couponService.deactivateCoupon(id);
         return ApiResponse.<Void>builder()
@@ -52,6 +56,7 @@ public class CouponController {
     }
 
     @GetMapping
+    @PreAuthorize("@permissionChecker.has('coupon:manage')")
     public ApiResponse<Page<CouponResponse>> getAllCoupons(
             @PageableDefault(size = 20, sort = "couponId") Pageable pageable) {
         return ApiResponse.<Page<CouponResponse>>builder()
@@ -60,6 +65,7 @@ public class CouponController {
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("@permissionChecker.has('coupon:manage')")
     public ApiResponse<CouponResponse> getCoupon(@PathVariable Long id) {
         return ApiResponse.<CouponResponse>builder()
                 .result(couponService.getCoupon(id))
@@ -69,6 +75,7 @@ public class CouponController {
     // ── USER PREVIEW ───────────────────────────────────────────────────────
 
     @PostMapping("/preview")
+    @PreAuthorize("@permissionChecker.has('coupon:apply')")
     public ApiResponse<CouponApplyResponse> previewApply(
             @Valid @RequestBody CouponApplyRequest request,
             Authentication authentication) {

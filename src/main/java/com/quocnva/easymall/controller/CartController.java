@@ -23,7 +23,7 @@ public class CartController {
     // ══════════════════════════════════════════════════════════════════
 
     @GetMapping("/me")
-    @PreAuthorize("hasAuthority('cart:view')")
+    @PreAuthorize("@permissionChecker.has('cart:view')")
     public ApiResponse<CartResponse> getMyCart(Authentication authentication) {
         String email = authentication.getName();
         return ApiResponse.<CartResponse>builder()
@@ -36,7 +36,7 @@ public class CartController {
     // ══════════════════════════════════════════════════════════════════
 
     @PostMapping("/me/items")
-    @PreAuthorize("hasAuthority('cart:manage')")
+    @PreAuthorize("@permissionChecker.has('cart:manage')")
     public ApiResponse<CartResponse> addItem(
             Authentication authentication,
             @Valid @RequestBody CartItemRequest request
@@ -53,7 +53,7 @@ public class CartController {
     // ══════════════════════════════════════════════════════════════════
 
     @PutMapping("/me/items/{variantId}")
-    @PreAuthorize("hasAuthority('cart:manage')")
+    @PreAuthorize("@permissionChecker.has('cart:manage')")
     public ApiResponse<CartResponse> updateItem(
             Authentication authentication,
             @PathVariable Long variantId,
@@ -71,7 +71,7 @@ public class CartController {
     // ══════════════════════════════════════════════════════════════════
 
     @DeleteMapping("/me/items/{variantId}")
-    @PreAuthorize("hasAuthority('cart:manage')")
+    @PreAuthorize("@permissionChecker.has('cart:manage')")
     public ApiResponse<Void> removeItem(
             Authentication authentication,
             @PathVariable Long variantId
@@ -88,7 +88,7 @@ public class CartController {
     // ══════════════════════════════════════════════════════════════════
 
     @DeleteMapping("/me")
-    @PreAuthorize("hasAuthority('cart:manage')")
+    @PreAuthorize("@permissionChecker.has('cart:manage')")
     public ApiResponse<Void> clearCart(Authentication authentication) {
         String email = authentication.getName();
         cartService.clearCart(email);

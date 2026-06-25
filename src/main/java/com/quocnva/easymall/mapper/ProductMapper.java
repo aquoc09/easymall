@@ -164,32 +164,14 @@ public abstract class ProductMapper {
     @Mapping(target = "isActive", ignore = true)       // default true
     @Mapping(target = "lockedStock", ignore = true)    // default 0
     @Mapping(target = "inventoryTransactions", ignore = true)
-    @Mapping(target = "variantAttributes", ignore = true) // @AfterMapping
     @Mapping(target = "skuCode", ignore = true)           // service sinh SKU
     public abstract ProductVariantEntity toVariantEntity(ProductVariantRequest request);
-
-    @AfterMapping
-    protected void afterToVariantEntity(ProductVariantRequest request, @MappingTarget ProductVariantEntity entity) {
-        // variantAttributes: Map<String, String> → JSON string
-        if (request.getVariantAttributes() != null) {
-            entity.setVariantAttributes(toJsonString(request.getVariantAttributes()));
-        }
-    }
 
     // ══════════════════════════════════════════════════════════════════
     // ProductVariantEntity → ProductVariantResponse
     // ══════════════════════════════════════════════════════════════════
 
-    @Mapping(target = "variantAttributes", ignore = true) // @AfterMapping
     public abstract ProductVariantResponse toVariantResponse(ProductVariantEntity entity);
-
-    @AfterMapping
-    protected void afterToVariantResponse(ProductVariantEntity entity, @MappingTarget ProductVariantResponse response) {
-        // variantAttributes: JSON string → Map<String, String>
-        if (entity.getVariantAttributes() != null) {
-            response.setVariantAttributes(fromJsonStringMap(entity.getVariantAttributes()));
-        }
-    }
 
     public abstract List<ProductVariantResponse> toVariantResponseList(List<ProductVariantEntity> entities);
 

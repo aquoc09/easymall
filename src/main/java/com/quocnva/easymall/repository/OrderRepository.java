@@ -8,6 +8,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;
+import com.quocnva.easymall.entity.DeviceSessionEntity;
+import java.time.LocalDate;
 
 public interface OrderRepository extends JpaRepository<OrderEntity, Long> {
 
@@ -22,4 +24,7 @@ public interface OrderRepository extends JpaRepository<OrderEntity, Long> {
 
     /** Admin filter theo trạng thái */
     Page<OrderEntity> findByOrderStatusOrderByOrderIdDesc(OrderStatus orderStatus, Pageable pageable);
+
+    /** Fraud Detection */
+    int countByDeviceSessionAndOrderDateAfter(DeviceSessionEntity deviceSession, LocalDate orderDate);
 }

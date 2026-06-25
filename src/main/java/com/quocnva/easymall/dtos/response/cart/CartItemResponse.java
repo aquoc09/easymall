@@ -14,7 +14,7 @@ public class CartItemResponse {
     private Long cartItemId;
     private Long variantId;
     private String productName;
-    private String variantAttributes;
+    private java.util.Map<String, String> variantAttributes;
     private String variantImage;
     private BigDecimal price;
     private Integer quantity;

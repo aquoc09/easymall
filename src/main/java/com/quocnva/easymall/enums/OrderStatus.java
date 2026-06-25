@@ -3,6 +3,8 @@ package com.quocnva.easymall.enums;
 public enum OrderStatus {
     /** Chờ xác nhận từ Shop */
     PENDING,
+    /** Giao dịch có dấu hiệu gian lận, cần Admin duyệt tay */
+    PENDING_REVIEW,
     /** Đang chờ thanh toán online (VNPAY / MoMo) — TTL 15 phút */
     PENDING_PAYMENT,
     /** Shop đã xác nhận, đang chờ GHN lấy hàng */

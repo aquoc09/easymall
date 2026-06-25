@@ -43,6 +43,7 @@ public class OrderServiceImpl implements OrderService {
     private final CouponServiceImpl couponServiceImpl;
     private final DeviceSessionService deviceSessionService;
     private final OrderMapper orderMapper;
+    private final com.quocnva.easymall.service.fraud.FraudDetectionService fraudDetectionService;
 
     // ── USER ──────────────────────────────────────────────────────────────
 
@@ -181,16 +182,27 @@ public class OrderServiceImpl implements OrderService {
         // Step 11: Xóa CartItems đã checkout
         cartItemRepository.deleteAllByCartItemIdIn(request.getCartItemIds());
 
-        // Step 12: Payment routing
+        // Step 12: Fraud Detection
+        com.quocnva.easymall.enums.SystemDecision decision = fraudDetectionService.evaluateOrder(savedOrder, deviceSession, user);
+        if (decision == com.quocnva.easymall.enums.SystemDecision.DECLINE) {
+            throw new AppException(ErrorCode.FRAUD_DETECTED);
+        }
+
+        // Step 13: Payment routing
         OrderStatus finalStatus;
         String paymentUrl = null;
 
-        if (request.getPaymentMethod() == PaymentMethod.COD) {
-            finalStatus = OrderStatus.AWAITING_SHIPMENT;
+        if (decision == com.quocnva.easymall.enums.SystemDecision.REVIEW) {
+            finalStatus = OrderStatus.PENDING_REVIEW;
         } else {
-            finalStatus = OrderStatus.PENDING_PAYMENT;
-            // TODO: gọi VNPAY/MoMo API để sinh paymentUrl thực tế
+            if (request.getPaymentMethod() == PaymentMethod.COD) {
+                finalStatus = OrderStatus.AWAITING_SHIPMENT;
+            } else {
+                finalStatus = OrderStatus.PENDING_PAYMENT;
+                // TODO: gọi VNPAY/MoMo API để sinh paymentUrl thực tế
+            }
         }
+        
         savedOrder.setOrderStatus(finalStatus);
         orderRepository.save(savedOrder);
 

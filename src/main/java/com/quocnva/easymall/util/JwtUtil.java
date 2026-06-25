@@ -15,7 +15,7 @@ import java.util.UUID;
 /**
  * JWT utility — generates and parses HMAC-SHA256 signed JWTs.
  *
- * Access Token claims:  sub, jti, iss, iat, exp, scope (role), type=ACCESS
+ * Access Token claims: sub, jti, iss, iat, exp, scope (role), type=ACCESS
  * Refresh Token claims: sub, jti, iss, iat, exp, type=REFRESH
  *
  * Uses Nimbus JOSE (already on classpath via spring-security-oauth2-jose).
