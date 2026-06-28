@@ -3,6 +3,7 @@ package com.quocnva.easymall.service.order.impl;
 import com.quocnva.easymall.dtos.request.order.CheckoutRequest;
 import com.quocnva.easymall.dtos.request.order.OrderCancelRequest;
 import com.quocnva.easymall.dtos.request.order.OrderStatusUpdateRequest;
+import com.quocnva.easymall.dtos.response.ghn.GhnCreateOrderResponse;
 import com.quocnva.easymall.dtos.response.order.CheckoutResponse;
 import com.quocnva.easymall.dtos.response.order.OrderResponse;
 import com.quocnva.easymall.dtos.response.order.OrderSummaryResponse;
@@ -16,6 +17,7 @@ import com.quocnva.easymall.repository.*;
 import com.quocnva.easymall.service.coupon.CouponService;
 import com.quocnva.easymall.service.coupon.impl.CouponServiceImpl;
 import com.quocnva.easymall.service.device.DeviceSessionService;
+import com.quocnva.easymall.service.ghn.GhnOrderService;
 import com.quocnva.easymall.service.order.OrderService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
@@ -43,6 +45,7 @@ public class OrderServiceImpl implements OrderService {
     private final CouponServiceImpl couponServiceImpl;
     private final DeviceSessionService deviceSessionService;
     private final OrderMapper orderMapper;
+    private final GhnOrderService ghnOrderService;
     private final com.quocnva.easymall.service.fraud.FraudDetectionService fraudDetectionService;
 
     // ── USER ──────────────────────────────────────────────────────────────
@@ -284,7 +287,18 @@ public class OrderServiceImpl implements OrderService {
     public void updateOrderStatus(Long orderId, OrderStatusUpdateRequest request) {
         OrderEntity order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new AppException(ErrorCode.ORDER_NOT_FOUND));
-        order.setOrderStatus(request.getNewStatus());
+
+        OrderStatus newStatus = request.getNewStatus();
+        order.setOrderStatus(newStatus);
+
+        // Phase 7: Tự động tạo đơn GHN khi Admin chuyển sang SHIPPING
+        if (newStatus == OrderStatus.SHIPPING) {
+            GhnCreateOrderResponse ghnOrder = ghnOrderService.createOrder(order);
+            order.setDeliveryOrderId(ghnOrder.getOrderCode());
+            order.setTrackingNumber(ghnOrder.getOrderCode());
+            order.setDeliveryStatus("READY_TO_PICK");
+        }
+
         orderRepository.save(order);
     }
 

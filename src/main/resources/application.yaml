@@ -72,3 +72,9 @@ logging:
 cors:
   allowed-origins:
     - ${CORS_ALLOWED_ORIGINS:http://localhost:5173,http://localhost:5174}
+
+ghn:
+  token: ${GHN_TOKEN}
+  url: ${GHN_API_URL}
+  shop-id: ${GHN_SHOP_ID}
+  ward-code: ${GHN_WARD_CODE}

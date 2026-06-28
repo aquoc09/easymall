@@ -27,4 +27,7 @@ public interface OrderRepository extends JpaRepository<OrderEntity, Long> {
 
     /** Fraud Detection */
     int countByDeviceSessionAndOrderDateAfter(DeviceSessionEntity deviceSession, LocalDate orderDate);
+
+    /** GHN Webhook — tìm order bằng tracking_number (= GHN order_code) */
+    Optional<OrderEntity> findByTrackingNumber(String trackingNumber);
 }

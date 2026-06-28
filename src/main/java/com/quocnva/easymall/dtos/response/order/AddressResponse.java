@@ -12,9 +12,17 @@ public class AddressResponse {
     private Long addressId;
     private String recipientName;
     private String phone;
-    private String fullAddress;
-    private String streetNumber;
+
     private Integer provinceId;
+    private String provinceName;
+
     private Integer districtId;
+    private String districtName;
+
     private String wardCode;
+    private String wardName;
+
+    private String streetNumber;
+    private String fullAddress;
+    private Boolean isDefault;
 }

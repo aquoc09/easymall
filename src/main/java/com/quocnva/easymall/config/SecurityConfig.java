@@ -40,6 +40,14 @@ public class SecurityConfig {
             "/api/v1/products/public/**",
             // Category public storefront
             "/api/v1/categories/public",
+            // GHN master data — FE cần khi mở form địa chỉ (không cần login)
+            "/api/v1/ghn/provinces",
+            "/api/v1/ghn/districts",
+            "/api/v1/ghn/wards",
+            // GHN Webhook — GHN callback, không có user token
+            "/api/v1/ghn/webhook",
+            // Reviews public
+            "/api/v1/reviews/product/**",
     };
 
     @Bean

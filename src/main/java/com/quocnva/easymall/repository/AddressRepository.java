@@ -16,4 +16,7 @@ public interface AddressRepository extends JpaRepository<AddressEntity, Long> {
 
     /** Validate address ownership khi checkout */
     Optional<AddressEntity> findByAddressIdAndUser_UserId(Long addressId, Long userId);
+
+    /** Giới hạn tối đa 5 địa chỉ */
+    int countByUserUserId(Long userId);
 }

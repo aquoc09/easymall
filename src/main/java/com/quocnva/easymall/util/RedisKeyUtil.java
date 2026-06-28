@@ -30,4 +30,19 @@ public final class RedisKeyUtil {
     public static String otpRateKey(OtpType type, String email) {
         return "otp_rate:" + type.name() + ":" + email;
     }
+
+    // ── GHN Master Data Cache ────────────────────────────────────────────────
+    // TTL 24h — dữ liệu địa chính hiếm khi thay đổi
+
+    public static String ghnProvincesKey() {
+        return "ghn:provinces";
+    }
+
+    public static String ghnDistrictsKey(Integer provinceId) {
+        return "ghn:districts:" + provinceId;
+    }
+
+    public static String ghnWardsKey(Integer districtId) {
+        return "ghn:wards:" + districtId;
+    }
 }

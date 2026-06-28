@@ -94,8 +94,17 @@ public enum ErrorCode {
     REVIEW_ORDER_NOT_COMPLETED(11003, "error.review-order-not-completed", HttpStatus.BAD_REQUEST),
     REVIEW_ORDER_OWNERSHIP_DENIED(11004, "error.review-order-ownership-denied", HttpStatus.FORBIDDEN),
 
-    // ── Wishlist ──────────────────────────────────────────────────────────────
+    // ── Wishlist ─────────────────────────────────────────────────────────────────────────────
     WISHLIST_ITEM_NOT_FOUND(12001, "error.wishlist-item-not-found", HttpStatus.NOT_FOUND),
+
+    // ── Address ──────────────────────────────────────────────────────────────────────────
+    ADDRESS_OWNERSHIP_DENIED(14001, "error.address-ownership-denied", HttpStatus.FORBIDDEN),
+    ADDRESS_MAX_LIMIT(14002, "error.address-max-limit", HttpStatus.BAD_REQUEST),
+
+    // ── GHN ───────────────────────────────────────────────────────────────────────────────────
+    GHN_INTEGRATION_ERROR(13001, "error.ghn-integration", HttpStatus.INTERNAL_SERVER_ERROR),
+    GHN_INVALID_LOCATION(13002, "error.ghn-invalid-location", HttpStatus.BAD_REQUEST),
+    GHN_SERVICE_UNAVAILABLE(13003, "error.ghn-service-unavailable", HttpStatus.BAD_REQUEST),
     ;
 
 
