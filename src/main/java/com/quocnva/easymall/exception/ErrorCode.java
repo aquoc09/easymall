@@ -87,6 +87,15 @@ public enum ErrorCode {
     CART_ITEMS_NOT_FOUND(10007, "error.cart-items-not-found", HttpStatus.BAD_REQUEST),
     ADDRESS_NOT_FOUND(10008, "error.address-not-found", HttpStatus.NOT_FOUND),
     FRAUD_DETECTED(10009, "error.fraud-detected", HttpStatus.FORBIDDEN),
+
+    // ── Review ────────────────────────────────────────────────────────────────
+    REVIEW_NOT_FOUND(11001, "error.review-not-found", HttpStatus.NOT_FOUND),
+    REVIEW_ALREADY_EXISTS(11002, "error.review-already-exists", HttpStatus.CONFLICT),
+    REVIEW_ORDER_NOT_COMPLETED(11003, "error.review-order-not-completed", HttpStatus.BAD_REQUEST),
+    REVIEW_ORDER_OWNERSHIP_DENIED(11004, "error.review-order-ownership-denied", HttpStatus.FORBIDDEN),
+
+    // ── Wishlist ──────────────────────────────────────────────────────────────
+    WISHLIST_ITEM_NOT_FOUND(12001, "error.wishlist-item-not-found", HttpStatus.NOT_FOUND),
     ;
 
 
