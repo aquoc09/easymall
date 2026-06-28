@@ -2,6 +2,7 @@ package com.quocnva.easymall.config;
 
 import com.quocnva.easymall.config.filter.JwtAuthenticationFilter;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -15,7 +16,20 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
+import java.util.Arrays;
+import java.util.List;
+
+/**
+ * Security configuration — JWT stateless, CORS, public endpoints.
+ *
+ * CORS được cấu hình tại đây (không dùng WebMvcConfigurer) vì Spring Security
+ * filter chain xử lý request trước Spring MVC. Nếu để CORS ở WebMvcConfigurer,
+ * preflight OPTIONS sẽ bị chặn 403 trước khi đến MVC layer.
+ */
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
@@ -24,7 +38,10 @@ public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
-    /** Public auth endpoints — no token required. */
+    @Value("${cors.allowed-origins:http://localhost:5173,http://localhost:5174}")
+    private String[] allowedOrigins;
+
+    /** Public endpoints — no token required. */
     private static final String[] PUBLIC_ENDPOINTS = {
             "/api/v1/auth/register",
             "/api/v1/auth/active",
@@ -35,16 +52,16 @@ public class SecurityConfig {
             "/api/v1/auth/introspect",
             "/api/v1/auth/forgot-password",
             "/api/v1/auth/reset-password",
-            // Product public storefront — product:read open to all
+            // Product public storefront
             "/api/v1/products/public",
             "/api/v1/products/public/**",
             // Category public storefront
             "/api/v1/categories/public",
-            // GHN master data — FE cần khi mở form địa chỉ (không cần login)
+            // GHN master data — FE cần khi mở form địa chỉ
             "/api/v1/ghn/provinces",
             "/api/v1/ghn/districts",
             "/api/v1/ghn/wards",
-            // GHN Webhook — GHN callback, không có user token
+            // GHN Webhook — callback từ GHN, không có user token
             "/api/v1/ghn/webhook",
             // Reviews public
             "/api/v1/reviews/product/**",
@@ -53,6 +70,7 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
@@ -62,6 +80,25 @@ public class SecurityConfig {
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
+    }
+
+    /**
+     * CORS source đọc từ application.yaml (cors.allowed-origins).
+     * Bean này được dùng trực tiếp bởi Spring Security filter chain,
+     * đảm bảo preflight OPTIONS được xử lý đúng trước khi authenticate.
+     */
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration config = new CorsConfiguration();
+        config.setAllowedOrigins(Arrays.asList(allowedOrigins));
+        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
+        config.setAllowedHeaders(List.of("*"));
+        config.setAllowCredentials(true);
+        config.setMaxAge(3600L); // cache preflight 1h
+
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/api/**", config);
+        return source;
     }
 
     @Bean
