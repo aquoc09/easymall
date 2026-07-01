@@ -4,6 +4,7 @@ import com.quocnva.easymall.dtos.request.product.ProductCreateRequest;
 import com.quocnva.easymall.dtos.request.product.ProductUpdateRequest;
 import com.quocnva.easymall.dtos.response.ApiResponse;
 import com.quocnva.easymall.dtos.response.product.ProductResponse;
+import com.quocnva.easymall.dtos.response.product.ProductVariantResponse;
 import com.quocnva.easymall.service.product.ProductService;
 import com.quocnva.easymall.util.Translator;
 import jakarta.validation.Valid;
@@ -54,6 +55,17 @@ public class ProductController {
                 .build();
     }
 
+    /**
+     * GET /api/v1/products/public/{productId}/variants
+     * Trả về danh sách tất cả variants của product (public — dùng ở trang chi tiết sản phẩm).
+     */
+    @GetMapping("/public/{productId}/variants")
+    public ApiResponse<List<ProductVariantResponse>> getVariantsPublic(@PathVariable Long productId) {
+        return ApiResponse.<List<ProductVariantResponse>>builder()
+                .result(productService.getVariantsByProductId(productId))
+                .build();
+    }
+
     // ══════════════════════════════════════════════════════════════════
     // Admin endpoints — require product permissions
     // ══════════════════════════════════════════════════════════════════
@@ -77,6 +89,17 @@ public class ProductController {
     public ApiResponse<ProductResponse> getProductById(@PathVariable Long productId) {
         return ApiResponse.<ProductResponse>builder()
                 .result(productService.getProductById(productId))
+                .build();
+    }
+
+    /**
+     * GET /api/v1/products/{productId}/variants — danh sách variants (admin).
+     */
+    @GetMapping("/{productId}/variants")
+    @PreAuthorize("@permissionChecker.has('product:read')")
+    public ApiResponse<List<ProductVariantResponse>> getVariants(@PathVariable Long productId) {
+        return ApiResponse.<List<ProductVariantResponse>>builder()
+                .result(productService.getVariantsByProductId(productId))
                 .build();
     }
 

@@ -5,6 +5,7 @@ import com.quocnva.easymall.dtos.request.product.ProductImageRequest;
 import com.quocnva.easymall.dtos.request.product.ProductUpdateRequest;
 import com.quocnva.easymall.dtos.request.product.ProductVariantRequest;
 import com.quocnva.easymall.dtos.response.product.ProductResponse;
+import com.quocnva.easymall.dtos.response.product.ProductVariantResponse;
 import com.quocnva.easymall.entity.ProductEntity;
 import com.quocnva.easymall.entity.ProductImageEntity;
 import com.quocnva.easymall.entity.ProductVariantEntity;
@@ -154,6 +155,21 @@ public class ProductServiceImpl implements ProductService {
                 .stream()
                 .map(productMapper::toResponse)
                 .toList();
+    }
+
+    // ══════════════════════════════════════════════════════════════════
+    // GET VARIANTS BY PRODUCT ID
+    // ══════════════════════════════════════════════════════════════════
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<ProductVariantResponse> getVariantsByProductId(Long productId) {
+        if (!productRepository.existsById(productId)) {
+            throw new AppException(ErrorCode.PRODUCT_NOT_FOUND);
+        }
+        return productMapper.toVariantResponseList(
+                productVariantRepository.findAllByProductProductId(productId)
+        );
     }
 
     // ══════════════════════════════════════════════════════════════════
