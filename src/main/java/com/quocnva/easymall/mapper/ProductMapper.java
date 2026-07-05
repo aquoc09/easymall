@@ -67,6 +67,9 @@ public abstract class ProductMapper {
 
     @AfterMapping
     protected void afterToEntity(ProductCreateRequest request, @MappingTarget ProductEntity entity) {
+        // Strip extra JSON quotes do FE double-serialize (ví dụ: "\"Tên SP\"" → "Tên SP")
+        // productName và productDescription được xử lý qua @Mapping(qualifiedByName) ở trên
+
         // productTags: List<String> → JSON string
         if (request.getProductTags() != null) {
             entity.setProductTags(toJsonString(request.getProductTags()));
@@ -104,6 +107,10 @@ public abstract class ProductMapper {
 
     @AfterMapping
     protected void afterUpdateEntity(ProductUpdateRequest request, @MappingTarget ProductEntity entity) {
+        // Strip extra JSON quotes do FE double-serialize
+        entity.setProductName(stripJsonQuotes(entity.getProductName()));
+        entity.setProductDescription(stripJsonQuotes(entity.getProductDescription()));
+
         // productTags: List<String> → JSON string
         if (request.getProductTags() != null) {
             entity.setProductTags(toJsonString(request.getProductTags()));
@@ -128,6 +135,11 @@ public abstract class ProductMapper {
 
     @AfterMapping
     protected void afterToResponse(ProductEntity entity, @MappingTarget ProductResponse response) {
+        // Strip extra quotes do data cũ trong DB hoặc FE double-serialize
+        response.setProductSlug(stripJsonQuotes(response.getProductSlug()));
+        response.setProductName(stripJsonQuotes(response.getProductName()));
+        response.setProductDescription(stripJsonQuotes(response.getProductDescription()));
+
         // productTags: JSON string → List<String>
         if (entity.getProductTags() != null) {
             response.setProductTags(fromJsonList(entity.getProductTags()));
@@ -174,6 +186,21 @@ public abstract class ProductMapper {
 
     public abstract ProductVariantResponse toVariantResponse(ProductVariantEntity entity);
 
+    @AfterMapping
+    protected void afterToVariantResponse(ProductVariantEntity entity,
+                                          @MappingTarget ProductVariantResponse response) {
+        // Strip extra quotes khỏi skuCode (data cũ hoặc FE double-serialize)
+        response.setSkuCode(stripJsonQuotes(response.getSkuCode()));
+
+        // Prepend base URL nếu variantImage là S3 key (không phải full URL)
+        String img = stripJsonQuotes(entity.getVariantImage());
+        if (img != null && !img.startsWith("http")) {
+            response.setVariantImage(storageBaseUrl + "/" + img);
+        } else {
+            response.setVariantImage(img);
+        }
+    }
+
     public abstract List<ProductVariantResponse> toVariantResponseList(List<ProductVariantEntity> entities);
 
     // ══════════════════════════════════════════════════════════════════
@@ -196,12 +223,32 @@ public abstract class ProductMapper {
     // Helper: JSON ↔ Java — thủ công, không phụ thuộc MapStruct
     // ══════════════════════════════════════════════════════════════════
 
+    @Named("toJsonString")
     public String toJsonString(Object value) {
         try {
             return objectMapper.writeValueAsString(value);
         } catch (JsonProcessingException e) {
             throw new AppException(ErrorCode.INVALID_JSONB_FORMAT);
         }
+    }
+
+    /**
+     * Strip leading/trailing JSON double-quotes do FE vô tình double-serialize.
+     * Đánh dấu @Named để MapStruct chỉ dùng khi được chỉ định rõ bằng qualifiedByName,
+     * tránh bị auto-pick làm global String converter.
+     * Ví dụ: "\"hello\"" → "hello"; "hello" → "hello" (giữ nguyên nếu không có quotes).
+     */
+    @Named("stripJsonQuotes")
+    public String stripJsonQuotes(String value) {
+        if (value == null) return null;
+        String v = value.trim();
+        // Xử lý trường hợp nhiều lớp quote lồng nhau
+        while (v.length() >= 2 && v.charAt(0) == '"' && v.charAt(v.length() - 1) == '"') {
+            String unescaped = v.substring(1, v.length() - 1).replace("\\\"", "\"");
+            // Nếu sau khi unwrap vẫn còn chứa escaped quotes thì tiếp tục unwrap
+            v = unescaped;
+        }
+        return v;
     }
 
     public void validateJsonString(String json) {

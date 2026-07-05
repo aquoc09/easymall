@@ -21,4 +21,5 @@ public class UserDetailResponse {
     private OffsetDateTime updatedAt;
     private String roleName;
     private Long roleId;
+    private String avatar;
 }

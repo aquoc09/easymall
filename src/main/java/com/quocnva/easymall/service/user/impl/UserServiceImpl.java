@@ -2,7 +2,6 @@ package com.quocnva.easymall.service.user.impl;
 
 import com.quocnva.easymall.dtos.request.user.CreateUserRequest;
 import com.quocnva.easymall.dtos.request.user.UpdateUserRequest;
-import com.quocnva.easymall.dtos.response.auth.UserResponse;
 import com.quocnva.easymall.dtos.response.user.UserDetailResponse;
 import com.quocnva.easymall.entity.RoleEntity;
 import com.quocnva.easymall.entity.UserEntity;
@@ -12,6 +11,7 @@ import com.quocnva.easymall.repository.RoleRepository;
 import com.quocnva.easymall.repository.UserRepository;
 import com.quocnva.easymall.service.user.UserService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -23,6 +23,9 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
 
+    @Value("${aws.base-url}")
+    private String storageBaseUrl;
+
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
@@ -31,22 +34,11 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional(readOnly = true)
-    public UserResponse getCurrentUser() {
+    public UserDetailResponse getCurrentUser() {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
         UserEntity user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
-
-        return UserResponse.builder()
-                .userId(user.getUserId())
-                .email(user.getEmail())
-                .fullName(user.getFullName())
-                .gender(user.getGender())
-                .phone(user.getPhone())
-                .dob(user.getDob())
-                .isActive(user.getIsActive())
-                .createdAt(user.getCreatedAt())
-                .roleName(user.getRole() != null ? user.getRole().getRoleName() : null)
-                .build();
+        return toDetailResponse(user);
     }
 
     // ── Admin CRUD ────────────────────────────────────────────────────────
@@ -114,6 +106,10 @@ public class UserServiceImpl implements UserService {
                     .orElseThrow(() -> new AppException(ErrorCode.ROLE_NOT_FOUND));
             user.setRole(role);
         }
+        if (request.getAvatar() != null) {
+            // Lưu nguyên S3-key hoặc URL được gửi lên — buildAvatarUrl sẽ xử lý khi trả về
+            user.setAvatar(request.getAvatar());
+        }
 
         return toDetailResponse(userRepository.save(user));
     }
@@ -144,6 +140,18 @@ public class UserServiceImpl implements UserService {
                 .updatedAt(user.getUpdatedAt())
                 .roleName(user.getRole() != null ? user.getRole().getRoleName() : null)
                 .roleId(user.getRole() != null ? user.getRole().getRoleId() : null)
+                .avatar(buildAvatarUrl(user.getAvatar()))
                 .build();
+    }
+
+    /**
+     * Normalize avatar value thành full URL.
+     * Nếu là S3 key (không bắt đầu bằng "http") thì prepend base-url.
+     * Nếu đã là full URL thì giữ nguyên.
+     */
+    private String buildAvatarUrl(String avatar) {
+        if (avatar == null || avatar.isBlank())
+            return null;
+        return avatar.startsWith("http") ? avatar : storageBaseUrl + "/" + avatar;
     }
 }

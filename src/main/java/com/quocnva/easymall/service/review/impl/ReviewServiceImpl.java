@@ -11,6 +11,7 @@ import com.quocnva.easymall.enums.ReviewStatus;
 import com.quocnva.easymall.exception.AppException;
 import com.quocnva.easymall.exception.ErrorCode;
 import com.quocnva.easymall.repository.*;
+import com.quocnva.easymall.repository.TempUploadRepository;
 import com.quocnva.easymall.service.review.ReviewService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -32,6 +33,7 @@ public class ReviewServiceImpl implements ReviewService {
     private final OrderRepository orderRepository;
     private final ProductRepository productRepository;
     private final UserRepository userRepository;
+    private final TempUploadRepository tempUploadRepository;
 
     @Override
     @Transactional
@@ -80,6 +82,9 @@ public class ReviewServiceImpl implements ReviewService {
                             .build())
                     .collect(Collectors.toList());
             review.setImages(images);
+
+            // Xóa bản ghi trung chuyển — ảnh đã được liên kết chính thức vào review
+            request.getImageUrls().forEach(tempUploadRepository::deleteByUrl);
         }
 
         ReviewEntity saved = reviewRepository.save(review);

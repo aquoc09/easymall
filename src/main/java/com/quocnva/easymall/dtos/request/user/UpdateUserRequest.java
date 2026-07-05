@@ -15,4 +15,9 @@ public class UpdateUserRequest {
     private LocalDate dob;
     private Long roleId;
     private Boolean isActive;
+
+    /**
+     * S3 key hoặc full URL của avatar. Ví dụ: "users/abc.png" hoặc full https://...
+     */
+    private String avatar;
 }

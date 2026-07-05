@@ -105,6 +105,12 @@ public enum ErrorCode {
     GHN_INTEGRATION_ERROR(13001, "error.ghn-integration", HttpStatus.INTERNAL_SERVER_ERROR),
     GHN_INVALID_LOCATION(13002, "error.ghn-invalid-location", HttpStatus.BAD_REQUEST),
     GHN_SERVICE_UNAVAILABLE(13003, "error.ghn-service-unavailable", HttpStatus.BAD_REQUEST),
+
+    // ── Upload ──────────────────────────────────────────────────────────────────────────────
+    INVALID_FILE_TYPE(15001, "error.upload.invalid-file-type", HttpStatus.BAD_REQUEST),
+    FILE_TOO_LARGE(15002, "error.upload.file-too-large", HttpStatus.PAYLOAD_TOO_LARGE),
+    S3_UPLOAD_FAILURE(15003, "error.upload.s3-failure", HttpStatus.INTERNAL_SERVER_ERROR),
+    EMPTY_FILE(15004, "error.upload.empty-file", HttpStatus.BAD_REQUEST),
     ;
 
 

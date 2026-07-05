@@ -63,7 +63,7 @@ vn-pay:
 #   google: ${GOOGLE_LOGIN_URL}   # Future: social login
 
 storage:
-  base-url: https://shopco-s3.s3.ap-southeast-1.amazonaws.com
+  base-url: ${AWS_URL}
 
 logging:
   level:
@@ -78,3 +78,12 @@ ghn:
   url: ${GHN_API_URL}
   shop-id: ${GHN_SHOP_ID}
   ward-code: ${GHN_WARD_CODE}
+
+aws:
+  s3:
+    bucket-name: ${AWS_BUCKET}
+    region: ${AWS_DEFAULT_REGION}
+  credentials:
+    access-key: ${AWS_ACCESS_KEY_ID}
+    secret-key: ${AWS_SECRET_ACCESS_KEY}
+  base-url: ${AWS_URL}

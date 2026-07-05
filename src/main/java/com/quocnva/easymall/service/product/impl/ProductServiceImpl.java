@@ -1,5 +1,6 @@
 package com.quocnva.easymall.service.product.impl;
 
+import com.quocnva.easymall.config.AwsS3Properties;
 import com.quocnva.easymall.dtos.request.product.ProductCreateRequest;
 import com.quocnva.easymall.dtos.request.product.ProductImageRequest;
 import com.quocnva.easymall.dtos.request.product.ProductUpdateRequest;
@@ -14,10 +15,10 @@ import com.quocnva.easymall.exception.AppException;
 import com.quocnva.easymall.exception.ErrorCode;
 import com.quocnva.easymall.mapper.ProductMapper;
 import com.quocnva.easymall.repository.CategoryRepository;
-
 import com.quocnva.easymall.repository.ProductImageRepository;
 import com.quocnva.easymall.repository.ProductRepository;
 import com.quocnva.easymall.repository.ProductVariantRepository;
+import com.quocnva.easymall.repository.TempUploadRepository;
 import com.quocnva.easymall.service.product.ProductService;
 import com.quocnva.easymall.util.SkuGenerator;
 import com.quocnva.easymall.util.SlugUtils;
@@ -36,6 +37,8 @@ public class ProductServiceImpl implements ProductService {
     private final ProductImageRepository productImageRepository;
     private final CategoryRepository categoryRepository;
     private final ProductMapper productMapper;
+    private final TempUploadRepository tempUploadRepository;
+    private final AwsS3Properties awsS3Properties;
 
     // ══════════════════════════════════════════════════════════════════
     // CREATE
@@ -234,8 +237,13 @@ public class ProductServiceImpl implements ProductService {
 
             // Sinh SKU nếu không có
             String sku;
-            if (varReq.getSkuCode() != null && !varReq.getSkuCode().isBlank()) {
-                sku = varReq.getSkuCode().toUpperCase();
+            String rawSku = varReq.getSkuCode();
+            // Strip dấu ngoặc kép thừa nếu FE gửi "\"SKU-005\""
+            if (rawSku != null) {
+                rawSku = rawSku.replaceAll("^\"+|\"+$", "").trim();
+            }
+            if (rawSku != null && !rawSku.isBlank()) {
+                sku = rawSku.toUpperCase();
             } else {
                 String catCode = resolveCategoryCode(product.getCategoryId());
                 boolean isSimpleVariant = varReq.getVariantAttributes() == null
@@ -263,6 +271,21 @@ public class ProductServiceImpl implements ProductService {
 
             productVariantRepository.save(variant);
             product.getVariants().add(variant);
+
+            // Xóa bản ghi trung chuyển cho ảnh variant — đã được liên kết chính thức
+            String rawImageUrl = varReq.getVariantImage();
+            if (rawImageUrl != null && !rawImageUrl.isBlank()) {
+                // Strip dấu ngoặc kép thừa
+                rawImageUrl = rawImageUrl.replaceAll("^\"+|\"+$", "").trim();
+                // Nếu FE gửi full URL thì chỉ lưu S3 key; nếu gửi key thì giữ nguyên
+                String s3Key = rawImageUrl.startsWith("http")
+                        ? rawImageUrl.replaceFirst(awsS3Properties.getBaseUrl() + "/?", "")
+                        : rawImageUrl;
+                variant.setVariantImage(s3Key);
+                tempUploadRepository.deleteByUrl(rawImageUrl.startsWith("http")
+                        ? rawImageUrl
+                        : awsS3Properties.getBaseUrl() + "/" + s3Key);
+            }
         }
     }
 
@@ -277,6 +300,11 @@ public class ProductServiceImpl implements ProductService {
             image.setProduct(product);
             productImageRepository.save(image);
             product.getImages().add(image);
+
+            // Xóa bản ghi trung chuyển — ảnh đã được liên kết chính thức
+            if (imgReq.getImageUrl() != null) {
+                tempUploadRepository.deleteByUrl(imgReq.getImageUrl());
+            }
         }
     }
 

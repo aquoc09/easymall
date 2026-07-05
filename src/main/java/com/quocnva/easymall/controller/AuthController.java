@@ -4,7 +4,7 @@ import com.quocnva.easymall.dtos.request.auth.*;
 import com.quocnva.easymall.dtos.response.ApiResponse;
 import com.quocnva.easymall.dtos.response.auth.AuthResponse;
 import com.quocnva.easymall.dtos.response.auth.IntrospectResponse;
-import com.quocnva.easymall.dtos.response.auth.UserResponse;
+import com.quocnva.easymall.dtos.response.user.UserDetailResponse;
 import com.quocnva.easymall.service.user.UserService;
 import com.quocnva.easymall.service.auth.AuthenticationService;
 import com.quocnva.easymall.service.auth.PasswordResetService;
@@ -136,9 +136,9 @@ public class AuthController {
      * Requires valid Bearer AT in Authorization header.
      */
     @GetMapping("/me")
-    public ApiResponse<UserResponse> getCurrentUser() {
-        UserResponse response = userService.getCurrentUser();
-        return ApiResponse.<UserResponse>builder()
+    public ApiResponse<UserDetailResponse> getCurrentUser() {
+        UserDetailResponse response = userService.getCurrentUser();
+        return ApiResponse.<UserDetailResponse>builder()
                 .result(response)
                 .build();
     }

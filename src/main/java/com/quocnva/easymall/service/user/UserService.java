@@ -2,7 +2,6 @@ package com.quocnva.easymall.service.user;
 
 import com.quocnva.easymall.dtos.request.user.CreateUserRequest;
 import com.quocnva.easymall.dtos.request.user.UpdateUserRequest;
-import com.quocnva.easymall.dtos.response.auth.UserResponse;
 import com.quocnva.easymall.dtos.response.user.UserDetailResponse;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -13,7 +12,7 @@ import org.springframework.data.domain.Pageable;
  */
 public interface UserService {
 
-    UserResponse getCurrentUser();
+    UserDetailResponse getCurrentUser();
 
     Page<UserDetailResponse> getAllUsers(Pageable pageable);
 

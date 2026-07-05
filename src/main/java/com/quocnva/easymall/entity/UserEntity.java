@@ -59,6 +59,9 @@ public class UserEntity {
     @Column(name = "dob")
     private LocalDate dob;
 
+    @Column(name = "avatar", length = 500)
+    private String avatar;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "role_id")
     private RoleEntity role;
