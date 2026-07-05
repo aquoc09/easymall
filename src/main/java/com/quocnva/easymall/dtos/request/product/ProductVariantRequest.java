@@ -25,8 +25,10 @@ public class ProductVariantRequest {
      * Tổ hợp thuộc tính biến thể. Ví dụ: {"color": "NVY", "size": "M"}.
      * Mapper sẽ convert Map → JSON string (variantAttributes).
      * Đồng thời dùng để sinh SKU code qua SkuGenerator.
+     * <p>
+     * Có thể là null hoặc rỗng {} cho sản phẩm đơn giản (single-variant),
+     * khi đó service sẽ dùng SKU pattern mặc định.
      */
-    @NotEmpty(message = "{validation.variantAttributes.not-empty}")
     private Map<String, String> variantAttributes;
 
     /** Nếu null, service sẽ tự sinh qua SkuGenerator. */

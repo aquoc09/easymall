@@ -1,5 +1,6 @@
 package com.quocnva.easymall.dtos.request.product;
 
+import com.quocnva.easymall.enums.TargetGender;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.*;
 import lombok.*;
@@ -23,10 +24,8 @@ public class ProductCreateRequest {
 
     private Boolean inPopular;
 
-    /** 0=Nữ, 1=Nam, 2=Unisex */
-    @Min(value = 0, message = "{validation.targetGender.range}")
-    @Max(value = 2, message = "{validation.targetGender.range}")
-    private Integer targetGender;
+    /** 0=Nữ, 1=Nam, 2=Unisex. Hỗ trợ cả dạng số (0,1,2) lẫn chuỗi ("FEMALE","MALE","UNISEX","OTHER"). */
+    private TargetGender targetGender;
 
     @Min(value = 0, message = "{validation.maxOrderQuantity.min}")
     private Integer maxOrderQuantity;

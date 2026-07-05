@@ -237,9 +237,17 @@ public class ProductServiceImpl implements ProductService {
             if (varReq.getSkuCode() != null && !varReq.getSkuCode().isBlank()) {
                 sku = varReq.getSkuCode().toUpperCase();
             } else {
-                // categoryId không bắt buộc — dùng "PRD" nếu không có category
                 String catCode = resolveCategoryCode(product.getCategoryId());
-                sku = SkuGenerator.generate(catCode, idForSku, varReq.getVariantAttributes());
+                boolean isSimpleVariant = varReq.getVariantAttributes() == null
+                        || varReq.getVariantAttributes().isEmpty();
+                if (isSimpleVariant) {
+                    // Sản phẩm đơn giản (không có thuộc tính biến thể)
+                    // SKU pattern: {CAT}-{productId}-DEFAULT
+                    sku = catCode + "-" + idForSku + "-DEFAULT";
+                } else {
+                    // Sản phẩm có variant: dùng SkuGenerator với attributes
+                    sku = SkuGenerator.generate(catCode, idForSku, varReq.getVariantAttributes());
+                }
             }
 
             if (productVariantRepository.existsBySkuCode(sku)) {

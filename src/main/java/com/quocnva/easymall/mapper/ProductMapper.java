@@ -13,6 +13,7 @@ import com.quocnva.easymall.dtos.response.product.ProductVariantResponse;
 import com.quocnva.easymall.entity.ProductEntity;
 import com.quocnva.easymall.entity.ProductImageEntity;
 import com.quocnva.easymall.entity.ProductVariantEntity;
+import com.quocnva.easymall.enums.TargetGender;
 import com.quocnva.easymall.exception.AppException;
 import com.quocnva.easymall.exception.ErrorCode;
 import org.mapstruct.*;
@@ -122,7 +123,7 @@ public abstract class ProductMapper {
     @Mapping(target = "productTags", ignore = true)    // @AfterMapping
     @Mapping(target = "variants", ignore = true)       // mapper xử lý riêng
     @Mapping(target = "images", ignore = true)         // mapper xử lý riêng
-    @Mapping(target = "targetGender", expression = "java(entity.getTargetGender() != null ? entity.getTargetGender().intValue() : null)")
+    @Mapping(target = "targetGender", expression = "java(toTargetGender(entity.getTargetGender()))")
     public abstract ProductResponse toResponse(ProductEntity entity);
 
     @AfterMapping
@@ -236,10 +237,19 @@ public abstract class ProductMapper {
     }
 
     /**
-     * Convert Integer → Short safely (null-safe).
-     * Dùng cho các field SMALLINT trong entity (ví dụ: targetGender).
+     * Convert TargetGender enum → Short (SMALLINT) khi lưu vào entity.
+     * Null-safe.
      */
-    public Short toShort(Integer value) {
-        return value != null ? value.shortValue() : null;
+    public Short toShort(TargetGender gender) {
+        return gender != null ? gender.getCode() : null;
+    }
+
+    /**
+     * Convert Short (SMALLINT từ DB) → TargetGender enum khi map sang response.
+     * Null-safe.
+     */
+    public TargetGender toTargetGender(Short code) {
+        if (code == null) return null;
+        return TargetGender.fromValue(code.intValue());
     }
 }

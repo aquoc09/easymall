@@ -1,5 +1,6 @@
 package com.quocnva.easymall.dtos.response.product;
 
+import com.quocnva.easymall.enums.TargetGender;
 import lombok.*;
 
 import java.math.BigDecimal;
@@ -21,8 +22,8 @@ public class ProductResponse {
     private Boolean inPopular;
     private Boolean inStock;
 
-    /** 0=Nữ, 1=Nam, 2=Unisex */
-    private Integer targetGender;
+    /** Serialize thành số (0/1/2) nhờ @JsonValue trong TargetGender enum. */
+    private TargetGender targetGender;
 
     private Integer maxOrderQuantity;
 
