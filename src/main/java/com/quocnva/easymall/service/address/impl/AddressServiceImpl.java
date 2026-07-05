@@ -5,7 +5,7 @@ import com.quocnva.easymall.dtos.request.address.UpdateAddressRequest;
 import com.quocnva.easymall.dtos.response.ghn.GhnDistrictResponse;
 import com.quocnva.easymall.dtos.response.ghn.GhnProvinceResponse;
 import com.quocnva.easymall.dtos.response.ghn.GhnWardResponse;
-import com.quocnva.easymall.dtos.response.order.AddressResponse;
+import com.quocnva.easymall.dtos.response.address.AddressResponse;
 import com.quocnva.easymall.entity.AddressEntity;
 import com.quocnva.easymall.entity.UserEntity;
 import com.quocnva.easymall.exception.AppException;
@@ -66,6 +66,8 @@ public class AddressServiceImpl implements AddressService {
             unsetAllDefaults(user.getUserId());
         }
 
+        String fullAddress = buildFullAddress(request.getStreetNumber(), wardName, districtName, provinceName);
+
         AddressEntity entity = AddressEntity.builder()
                 .user(user)
                 .recipientName(request.getRecipientName())
@@ -77,6 +79,7 @@ public class AddressServiceImpl implements AddressService {
                 .wardCode(request.getWardCode())
                 .wardName(wardName)
                 .streetNumber(request.getStreetNumber())
+                .fullAddress(fullAddress)
                 .isDefault(Boolean.TRUE.equals(request.getIsDefault()))
                 .build();
 
@@ -119,6 +122,14 @@ public class AddressServiceImpl implements AddressService {
             unsetAllDefaults(entity.getUser().getUserId());
             entity.setIsDefault(true);
         }
+
+        // Tính lại fullAddress nếu bất kỳ thành phần nào thay đổi
+        entity.setFullAddress(buildFullAddress(
+                entity.getStreetNumber(),
+                entity.getWardName(),
+                entity.getDistrictName(),
+                entity.getProvinceName()
+        ));
 
         return toResponse(addressRepository.save(entity));
     }
@@ -198,7 +209,19 @@ public class AddressServiceImpl implements AddressService {
                 .wardCode(entity.getWardCode())
                 .wardName(entity.getWardName())
                 .streetNumber(entity.getStreetNumber())
+                .fullAddress(entity.getFullAddress())
                 .isDefault(entity.getIsDefault())
                 .build();
+    }
+
+    /**
+     * Ghép full address theo format: "[streetNumber], [ward], [district], [province]"
+     * Bỏ qua các phần null/blank.
+     */
+    private String buildFullAddress(String streetNumber, String wardName,
+                                    String districtName, String provinceName) {
+        return java.util.stream.Stream.of(streetNumber, wardName, districtName, provinceName)
+                .filter(s -> s != null && !s.isBlank())
+                .collect(java.util.stream.Collectors.joining(", "));
     }
 }

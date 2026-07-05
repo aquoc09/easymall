@@ -1,6 +1,6 @@
 package com.quocnva.easymall.mapper;
 
-import com.quocnva.easymall.dtos.response.order.AddressResponse;
+import com.quocnva.easymall.dtos.response.address.AddressResponse;
 import com.quocnva.easymall.dtos.response.order.OrderDetailResponse;
 import com.quocnva.easymall.dtos.response.order.OrderResponse;
 import com.quocnva.easymall.dtos.response.order.OrderSummaryResponse;

@@ -2,7 +2,7 @@ package com.quocnva.easymall.service.address;
 
 import com.quocnva.easymall.dtos.request.address.CreateAddressRequest;
 import com.quocnva.easymall.dtos.request.address.UpdateAddressRequest;
-import com.quocnva.easymall.dtos.response.order.AddressResponse;
+import com.quocnva.easymall.dtos.response.address.AddressResponse;
 
 import java.util.List;
 

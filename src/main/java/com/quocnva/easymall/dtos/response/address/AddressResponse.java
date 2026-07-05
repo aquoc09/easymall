@@ -1,4 +1,4 @@
-package com.quocnva.easymall.dtos.response.order;
+package com.quocnva.easymall.dtos.response.address;
 
 import lombok.Builder;
 import lombok.Getter;

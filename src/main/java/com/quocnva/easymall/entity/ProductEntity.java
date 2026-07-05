@@ -51,6 +51,7 @@ public class ProductEntity {
      * options_config: JSONB — cấu hình các option của sản phẩm (ví dụ: màu, size).
      * Lưu dưới dạng String JSON, convert thủ công qua service/mapper.
      */
+    @org.hibernate.annotations.JdbcTypeCode(org.hibernate.type.SqlTypes.JSON)
     @Column(name = "options_config", columnDefinition = "jsonb")
     private String optionsConfig;
 
@@ -58,6 +59,7 @@ public class ProductEntity {
      * product_tags: JSONB — danh sách tag. Ví dụ: ["vintage", "oversize"].
      * DEFAULT '[]'::jsonb phía DB.
      */
+    @org.hibernate.annotations.JdbcTypeCode(org.hibernate.type.SqlTypes.JSON)
     @Column(name = "product_tags", columnDefinition = "jsonb")
     private String productTags;
 

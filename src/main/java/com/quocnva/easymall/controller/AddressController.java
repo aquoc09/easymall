@@ -3,7 +3,7 @@ package com.quocnva.easymall.controller;
 import com.quocnva.easymall.dtos.request.address.CreateAddressRequest;
 import com.quocnva.easymall.dtos.request.address.UpdateAddressRequest;
 import com.quocnva.easymall.dtos.response.ApiResponse;
-import com.quocnva.easymall.dtos.response.order.AddressResponse;
+import com.quocnva.easymall.dtos.response.address.AddressResponse;
 import com.quocnva.easymall.service.address.AddressService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;

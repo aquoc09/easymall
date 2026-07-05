@@ -1,5 +1,6 @@
 package com.quocnva.easymall.dtos.response.order;
 
+import com.quocnva.easymall.dtos.response.address.AddressResponse;
 import com.quocnva.easymall.enums.OrderStatus;
 import com.quocnva.easymall.enums.PaymentMethod;
 import com.quocnva.easymall.enums.ShippingMethod;
