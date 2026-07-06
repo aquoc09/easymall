@@ -7,7 +7,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
+import java.time.OffsetDateTime;
 
 @Getter
 @Setter
@@ -15,7 +15,7 @@ import java.time.LocalDate;
 public class OrderSummaryResponse {
 
     private Long orderId;
-    private LocalDate orderDate;
+    private OffsetDateTime orderDate;
     private OrderStatus orderStatus;
     private PaymentMethod paymentMethod;
     private BigDecimal finalPaymentMoney;

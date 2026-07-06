@@ -90,9 +90,7 @@ public class CategoryServiceImpl implements CategoryService {
         if (entity.getDisplayOrder() == null) {
             entity.setDisplayOrder(0);
         }
-        if (entity.getCategoryType() == null || entity.getCategoryType().isEmpty()) {
-            entity.setCategoryType("STANDARD");
-        }
+
 
         entity = categoryRepository.save(entity);
         return categoryMapper.toResponse(entity);

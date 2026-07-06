@@ -7,7 +7,6 @@ import com.quocnva.easymall.entity.*;
 import com.quocnva.easymall.enums.SystemDecision;
 import com.quocnva.easymall.repository.FraudRecordRepository;
 import com.quocnva.easymall.repository.FraudRuleConfigRepository;
-import com.quocnva.easymall.repository.OrderRepository;
 import com.quocnva.easymall.repository.UserStatsRepository;
 import com.quocnva.easymall.service.fraud.AiIntegrationService;
 import com.quocnva.easymall.service.fraud.FraudDetectionService;
@@ -26,7 +25,6 @@ public class FraudDetectionServiceImpl implements FraudDetectionService {
     private final UserStatsRepository userStatsRepository;
     private final FraudRuleConfigRepository fraudRuleConfigRepository;
     private final FraudRecordRepository fraudRecordRepository;
-    private final OrderRepository orderRepository;
 
     @Override
     @Transactional
@@ -60,11 +58,11 @@ public class FraudDetectionServiceImpl implements FraudDetectionService {
         // Tạm thời mock logic location_mismatch = 0 cho tới session tiếp theo
         int locationMismatch = 0;
         
-        // Tạm thời mock logic orders_per_device_24h = 1. Nếu cần có thể query orderRepository.countByDeviceSession...
-        int ordersPerDevice24h = 1; 
-        if (deviceSession != null) {
-            ordersPerDevice24h = orderRepository.countByDeviceSessionAndOrderDateAfter(deviceSession, java.time.LocalDate.now().minusDays(1).atStartOfDay().toLocalDate());
-        }
+        // TODO [Fraud Detection]: device_session_id đã bị xoá khỏi OrderEntity.
+        // Cần implement lại orders_per_device_24h qua user_id hoặc IP address.
+        // Tạm thời mock = 1 để không ảnh hưởng fraud score.
+        int ordersPerDevice24h = 1;
+
 
         FraudRequestDTO request = FraudRequestDTO.builder()
                 .orderTotalAmount(order.getFinalPaymentMoney() != null ? order.getFinalPaymentMoney().doubleValue() : 0.0)

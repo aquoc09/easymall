@@ -2,8 +2,10 @@ package com.quocnva.easymall.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import java.math.BigDecimal;
+import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -55,11 +57,13 @@ public class ProductVariantEntity {
     @Column(name = "is_active", nullable = false, columnDefinition = "BOOLEAN DEFAULT TRUE")
     private Boolean isActive;
 
-    /**
-     * locked_stock >= 0 — số lượng đang bị giữ bởi đơn hàng chưa thanh toán.
-     */
+    /** locked_stock >= 0 — số lượng đang bị giữ bởi đơn hàng chưa thanh toán. */
     @Column(name = "locked_stock", nullable = false, columnDefinition = "INT DEFAULT 0")
     private Integer lockedStock;
+
+    @UpdateTimestamp
+    @Column(name = "updated_at")
+    private OffsetDateTime updatedAt;
 
     // ── Relationships ──────────────────────────────────────────────────
 
@@ -74,7 +78,7 @@ public class ProductVariantEntity {
     @PrePersist
     protected void onCreate() {
         if (stockQuantity == null) stockQuantity = 0;
-        if (isActive == null) isActive = true;
-        if (lockedStock == null) lockedStock = 0;
+        if (isActive == null)      isActive = true;
+        if (lockedStock == null)   lockedStock = 0;
     }
 }

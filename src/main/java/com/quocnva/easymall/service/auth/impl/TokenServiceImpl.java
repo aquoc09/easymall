@@ -37,7 +37,6 @@ public class TokenServiceImpl implements TokenService {
         TokenEntity tokenEntity = TokenEntity.builder()
                 .refreshToken(refreshToken)
                 .expiresAt(OffsetDateTime.now().plusDays(OtpConstants.RT_TTL_DAYS))
-                .deviceInfo(deviceInfo)
                 .user(user)
                 .build();
 
@@ -64,8 +63,7 @@ public class TokenServiceImpl implements TokenService {
                 .orElseThrow(() -> new AppException(ErrorCode.REFRESH_TOKEN_INVALID));
 
         // Check expiry
-        if (tokenEntity.getExpiresAt() == null ||
-                tokenEntity.getExpiresAt().isBefore(OffsetDateTime.now())) {
+        if (tokenEntity.getExpiresAt().isBefore(OffsetDateTime.now())) {
             tokenRepository.delete(tokenEntity);
             throw new AppException(ErrorCode.REFRESH_TOKEN_INVALID);
         }
@@ -74,7 +72,7 @@ public class TokenServiceImpl implements TokenService {
 
         // Delete old RT row, generate + save new pair
         tokenRepository.delete(tokenEntity);
-        return generateAndSaveTokens(user, tokenEntity.getDeviceInfo());
+        return generateAndSaveTokens(user, null);
     }
 
     @Override

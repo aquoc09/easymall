@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -21,9 +22,8 @@ public class CategoryResponse {
     private Integer level;
     private Long parentId;
     private String iconUrl;
-    private Integer targetDemographic;
-    private String categoryType;
     private Integer displayOrder;
+    private OffsetDateTime updatedAt;
     
     // For Tree Structure
     @Builder.Default

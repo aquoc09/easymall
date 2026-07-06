@@ -5,9 +5,10 @@ import com.quocnva.easymall.enums.PaymentMethod;
 import com.quocnva.easymall.enums.ShippingMethod;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
+import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -27,10 +28,10 @@ public class OrderEntity {
 
     @Builder.Default
     @Column(name = "order_date", nullable = false)
-    private LocalDate orderDate = LocalDate.now();
+    private OffsetDateTime orderDate = OffsetDateTime.now();
 
     @Column(name = "shipping_date")
-    private LocalDate shippingDate;
+    private OffsetDateTime shippingDate;
 
     /** 0: COD, 1: VNPAY, 2: MOMO */
     @Enumerated(EnumType.ORDINAL)
@@ -50,9 +51,8 @@ public class OrderEntity {
     @Column(name = "delivery_status", length = 50)
     private String deliveryStatus = "PENDING";
 
-    @Builder.Default
-    @Column(name = "tracking_number", nullable = false, length = 100)
-    private String trackingNumber = "";
+    @Column(name = "tracking_number", length = 100)
+    private String trackingNumber;
 
     @Column(name = "note", length = 200)
     private String note;
@@ -70,18 +70,10 @@ public class OrderEntity {
     @Column(name = "order_status", nullable = false, length = 50)
     private OrderStatus orderStatus = OrderStatus.PENDING;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "device_session_id")
-    private DeviceSessionEntity deviceSession;
-
-    // ── Tầng 1: Tiền hàng ────────────────────────────────────────────
+    // ── Tầng 1: Tiền hàng ─────────────────────────────────────────────────
 
     @Column(name = "total_product_money", nullable = false, precision = 15, scale = 2)
     private BigDecimal totalProductMoney;
-
-    @Builder.Default
-    @Column(name = "shop_discount_amount", precision = 15, scale = 2)
-    private BigDecimal shopDiscountAmount = BigDecimal.ZERO;
 
     // ── Tầng 2: Vận chuyển ───────────────────────────────────────────
 
@@ -103,6 +95,12 @@ public class OrderEntity {
 
     @Column(name = "final_payment_money", nullable = false, precision = 15, scale = 2)
     private BigDecimal finalPaymentMoney;
+
+    // ── Audit ────────────────────────────────────────────────────
+
+    @UpdateTimestamp
+    @Column(name = "updated_at")
+    private OffsetDateTime updatedAt;
 
     // ── Relationships ─────────────────────────────────────────────────
 

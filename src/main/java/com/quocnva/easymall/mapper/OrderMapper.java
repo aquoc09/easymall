@@ -57,7 +57,6 @@ public class OrderMapper {
                 .trackingNumber(order.getTrackingNumber())
                 .note(order.getNote())
                 .totalProductMoney(order.getTotalProductMoney())
-                .shopDiscountAmount(order.getShopDiscountAmount())
                 .originalShippingFee(order.getOriginalShippingFee())
                 .shippingDiscountAmount(order.getShippingDiscountAmount())
                 .paymentDiscountAmount(order.getPaymentDiscountAmount())

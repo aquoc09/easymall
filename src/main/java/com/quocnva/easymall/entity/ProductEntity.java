@@ -2,9 +2,11 @@ package com.quocnva.easymall.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -78,8 +80,38 @@ public class ProductEntity {
     @Column(name = "height_m", precision = 5, scale = 2)
     private BigDecimal heightM;
 
+    @CreationTimestamp
     @Column(name = "created_at", updatable = false)
-    private LocalDateTime createdAt;
+    private OffsetDateTime createdAt;
+
+    @UpdateTimestamp
+    @Column(name = "updated_at")
+    private OffsetDateTime updatedAt;
+
+    /**
+     * Denormalized stats — managed by DB trigger (min/max) and application/cron (others).
+     * insertable=false, updatable=false: Hibernate không ghi vào các cột này.
+     */
+    @Column(name = "min_price", insertable = false, updatable = false, precision = 15, scale = 2)
+    private java.math.BigDecimal minPrice;
+
+    @Column(name = "max_price", insertable = false, updatable = false, precision = 15, scale = 2)
+    private java.math.BigDecimal maxPrice;
+
+    @Column(name = "view_count", insertable = false, updatable = false)
+    private Integer viewCount;
+
+    @Column(name = "sold_count", insertable = false, updatable = false)
+    private Integer soldCount;
+
+    @Column(name = "rating_avg", insertable = false, updatable = false, precision = 3, scale = 2)
+    private java.math.BigDecimal ratingAvg;
+
+    @Column(name = "rating_count", insertable = false, updatable = false)
+    private Integer ratingCount;
+
+    @Column(name = "popularity_score", insertable = false, updatable = false, precision = 10, scale = 4)
+    private java.math.BigDecimal popularityScore;
 
     /**
      * search_vector: TSVECTOR — được DB trigger tự động cập nhật, không set từ Java.
@@ -100,12 +132,9 @@ public class ProductEntity {
 
     @PrePersist
     protected void onCreate() {
-        if (createdAt == null) {
-            createdAt = LocalDateTime.now();
-        }
-        if (inPopular == null) inPopular = false;
-        if (inStock == null) inStock = true;
-        if (targetGender == null) targetGender = (short) 2;
+        if (inPopular == null)       inPopular = false;
+        if (inStock == null)         inStock = true;
+        if (targetGender == null)    targetGender = (short) 2;
         if (maxOrderQuantity == null) maxOrderQuantity = 0;
     }
 }

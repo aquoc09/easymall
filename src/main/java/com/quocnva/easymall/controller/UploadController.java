@@ -91,4 +91,29 @@ public class UploadController {
                 .result(response)
                 .build();
     }
+
+    /**
+     * Upload icon cho category lên S3.
+     *
+     * <pre>
+     * POST /api/v1/uploads/image/categories
+     * Content-Type: multipart/form-data
+     * Body: file (image file)
+     * </pre>
+     *
+     * <p>Sau khi upload thành công, FE nhận {@code imageUrl} và gửi trong
+     * {@code PATCH /api/v1/categories/{id}} với field {@code iconUrl}.
+     */
+    @PostMapping(value = "/image/categories", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ApiResponse<UploadImageResponse> uploadCategoryIcon(
+            @RequestPart("file") MultipartFile file) {
+
+        UploadImageResponse response = storageService.uploadImage(file, UploadConstants.FOLDER_CATEGORIES);
+
+        return ApiResponse.<UploadImageResponse>builder()
+                .message(Translator.toLocale("success.upload.image"))
+                .result(response)
+                .build();
+    }
 }
+

@@ -9,7 +9,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
+import java.time.OffsetDateTime;
 import java.util.List;
 
 @Getter
@@ -18,16 +18,15 @@ import java.util.List;
 public class OrderResponse {
 
     private Long orderId;
-    private LocalDate orderDate;
+    private OffsetDateTime orderDate;
     private OrderStatus orderStatus;
     private PaymentMethod paymentMethod;
     private ShippingMethod shippingMethod;
     private String trackingNumber;
     private String note;
 
-    // ── Tài chính ──────────────────────────────────────────────────────
+    // ── Tài chính ──────────────────────────────────────────────────
     private BigDecimal totalProductMoney;
-    private BigDecimal shopDiscountAmount;
     private BigDecimal originalShippingFee;
     private BigDecimal shippingDiscountAmount;
     private BigDecimal paymentDiscountAmount;

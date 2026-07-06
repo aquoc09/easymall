@@ -22,10 +22,10 @@ public class OrderDetailEntity {
     @Column(name = "num_of_product", nullable = false)
     private Integer numOfProduct;
 
-    @Column(name = "order_detail_price", nullable = false, precision = 12, scale = 2)
+    @Column(name = "order_detail_price", nullable = false, precision = 15, scale = 2)
     private BigDecimal orderDetailPrice;
 
-    @Column(name = "total_money", nullable = false, precision = 12, scale = 2)
+    @Column(name = "total_money", nullable = false, precision = 15, scale = 2)
     private BigDecimal totalMoney;
 
     @Builder.Default

@@ -28,3 +28,4 @@ public class ProductVariantResponse {
     private Boolean isActive;
     private Integer lockedStock;
 }
+

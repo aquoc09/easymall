@@ -37,7 +37,8 @@ public class UserEntity {
     @Column(name = "email", nullable = false, unique = true, length = 100)
     private String email;
 
-    @Column(name = "password", nullable = false, length = 255)
+    /** Nullable: OAuth-only user không cần password. Constraint chk_users_password đảm bảo tính hợp lệ ở tầng DB. */
+    @Column(name = "password", length = 255)
     private String password;
 
     @Column(name = "full_name", nullable = false, length = 100)
@@ -61,6 +62,14 @@ public class UserEntity {
 
     @Column(name = "avatar", length = 500)
     private String avatar;
+
+    /** Thời điểm user xác thực email. NULL = chưa xác thực. */
+    @Column(name = "email_verified_at")
+    private OffsetDateTime emailVerifiedAt;
+
+    /** Thời điểm đăng nhập gần nhất — dùng cho audit và security. */
+    @Column(name = "last_login_at")
+    private OffsetDateTime lastLoginAt;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "role_id")

@@ -24,11 +24,6 @@ public class CategoryUpdateRequest {
     @Size(max = 500, message = "{validation.iconUrl.size}")
     private String iconUrl;
 
-    private Integer targetDemographic;
-
-    @Size(max = 30, message = "{validation.categoryType.size}")
-    private String categoryType;
-
     private Integer displayOrder;
 
 }

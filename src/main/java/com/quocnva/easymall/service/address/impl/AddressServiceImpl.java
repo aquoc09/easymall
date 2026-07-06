@@ -56,28 +56,24 @@ public class AddressServiceImpl implements AddressService {
             throw new AppException(ErrorCode.ADDRESS_MAX_LIMIT);
         }
 
-        // Lấy tên tỉnh/huyện/xã từ GHN master data (đã cached trong Redis)
+        // Resolve display names để build fullAddress (không lưu vào DB nữa)
         String provinceName = resolveProvinceName(request.getProvinceId());
         String districtName = resolveDistrictName(request.getProvinceId(), request.getDistrictId());
-        String wardName = resolveWardName(request.getDistrictId(), request.getWardCode());
+        String wardName     = resolveWardName(request.getDistrictId(), request.getWardCode());
+        String fullAddress  = buildFullAddress(request.getStreetNumber(), wardName, districtName, provinceName);
 
         // Nếu set làm default → unset các địa chỉ cũ
         if (Boolean.TRUE.equals(request.getIsDefault())) {
             unsetAllDefaults(user.getUserId());
         }
 
-        String fullAddress = buildFullAddress(request.getStreetNumber(), wardName, districtName, provinceName);
-
         AddressEntity entity = AddressEntity.builder()
                 .user(user)
                 .recipientName(request.getRecipientName())
                 .phone(request.getPhone())
                 .provinceId(request.getProvinceId())
-                .provinceName(provinceName)
                 .districtId(request.getDistrictId())
-                .districtName(districtName)
                 .wardCode(request.getWardCode())
-                .wardName(wardName)
                 .streetNumber(request.getStreetNumber())
                 .fullAddress(fullAddress)
                 .isDefault(Boolean.TRUE.equals(request.getIsDefault()))
@@ -99,37 +95,28 @@ public class AddressServiceImpl implements AddressService {
         AddressEntity entity = findAddressAndValidateOwnership(addressId, userEmail);
 
         if (request.getRecipientName() != null) entity.setRecipientName(request.getRecipientName());
-        if (request.getPhone() != null) entity.setPhone(request.getPhone());
-        if (request.getStreetNumber() != null) entity.setStreetNumber(request.getStreetNumber());
+        if (request.getPhone() != null)         entity.setPhone(request.getPhone());
+        if (request.getStreetNumber() != null)  entity.setStreetNumber(request.getStreetNumber());
 
-        // Nếu thay đổi địa chính → cần cập nhật tên
-        if (request.getProvinceId() != null) {
-            entity.setProvinceId(request.getProvinceId());
-            entity.setProvinceName(resolveProvinceName(request.getProvinceId()));
-        }
-        if (request.getDistrictId() != null) {
-            Integer provinceId = request.getProvinceId() != null ? request.getProvinceId() : entity.getProvinceId();
-            entity.setDistrictId(request.getDistrictId());
-            entity.setDistrictName(resolveDistrictName(provinceId, request.getDistrictId()));
-        }
-        if (request.getWardCode() != null) {
-            entity.setWardCode(request.getWardCode());
-            entity.setWardName(resolveWardName(entity.getDistrictId(), request.getWardCode()));
-        }
+        if (request.getProvinceId() != null) entity.setProvinceId(request.getProvinceId());
+        if (request.getDistrictId() != null) entity.setDistrictId(request.getDistrictId());
+        if (request.getWardCode() != null)   entity.setWardCode(request.getWardCode());
+
+        // Tính lại fullAddress từ GHN master data (resolve on-the-fly)
+        Integer provinceId = entity.getProvinceId();
+        Integer districtId = entity.getDistrictId();
+        String  wardCode   = entity.getWardCode();
+
+        String provinceName = resolveProvinceName(provinceId);
+        String districtName = resolveDistrictName(provinceId, districtId);
+        String wardName     = resolveWardName(districtId, wardCode);
+        entity.setFullAddress(buildFullAddress(entity.getStreetNumber(), wardName, districtName, provinceName));
 
         // Set default
         if (Boolean.TRUE.equals(request.getIsDefault())) {
             unsetAllDefaults(entity.getUser().getUserId());
             entity.setIsDefault(true);
         }
-
-        // Tính lại fullAddress nếu bất kỳ thành phần nào thay đổi
-        entity.setFullAddress(buildFullAddress(
-                entity.getStreetNumber(),
-                entity.getWardName(),
-                entity.getDistrictName(),
-                entity.getProvinceName()
-        ));
 
         return toResponse(addressRepository.save(entity));
     }
@@ -197,17 +184,25 @@ public class AddressServiceImpl implements AddressService {
                 .orElse("");
     }
 
+    /**
+     * Resolve display names on-the-fly từ GHN master data rồi build AddressResponse.
+     * province/district/ward names KHÔNG còn lưu trong DB (đã bỏ V5.3).
+     */
     private AddressResponse toResponse(AddressEntity entity) {
+        String provinceName = resolveProvinceName(entity.getProvinceId());
+        String districtName = resolveDistrictName(entity.getProvinceId(), entity.getDistrictId());
+        String wardName     = resolveWardName(entity.getDistrictId(), entity.getWardCode());
+
         return AddressResponse.builder()
                 .addressId(entity.getAddressId())
                 .recipientName(entity.getRecipientName())
                 .phone(entity.getPhone())
                 .provinceId(entity.getProvinceId())
-                .provinceName(entity.getProvinceName())
+                .provinceName(provinceName)
                 .districtId(entity.getDistrictId())
-                .districtName(entity.getDistrictName())
+                .districtName(districtName)
                 .wardCode(entity.getWardCode())
-                .wardName(entity.getWardName())
+                .wardName(wardName)
                 .streetNumber(entity.getStreetNumber())
                 .fullAddress(entity.getFullAddress())
                 .isDefault(entity.getIsDefault())

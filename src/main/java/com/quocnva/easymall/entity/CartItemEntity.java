@@ -6,7 +6,13 @@ import lombok.*;
 import java.math.BigDecimal;
 
 @Entity
-@Table(name = "cart_items")
+@Table(
+    name = "cart_items",
+    uniqueConstraints = @UniqueConstraint(
+        name = "uq_cart_items_cart_variant",
+        columnNames = {"cart_id", "variant_id"}
+    )
+)
 @Getter
 @Setter
 @NoArgsConstructor
@@ -30,7 +36,7 @@ public class CartItemEntity {
     @Column(name = "quantity", nullable = false)
     private Integer quantity;
 
-    @Column(name = "total_money", nullable = false, precision = 12, scale = 2)
+    @Column(name = "total_money", nullable = false, precision = 15, scale = 2)
     private BigDecimal totalMoney;
 
     @Column(name = "note", length = 200)

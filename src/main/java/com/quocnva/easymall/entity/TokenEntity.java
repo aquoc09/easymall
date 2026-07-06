@@ -24,20 +24,16 @@ public class TokenEntity {
      * Access Tokens are NEVER persisted — they are blacklisted in Redis on logout.
      * is_revoked is vestigial; RT revocation = row deletion.
      */
-    @Column(name = "refresh_token", nullable = false, length = 1000)
+    @Column(name = "refresh_token", nullable = false, length = 300)
     private String refreshToken;
 
     @Builder.Default
     @Column(name = "is_revoked")
     private Boolean isRevoked = false;
 
-    /** RT expiry timestamp — checked against now() before allowing rotation in refresh(). */
-    @Column(name = "expires_at")
+    /** RT expiry timestamp — NOT NULL, kiểm tra trước khi cho phép rotation trong refresh(). */
+    @Column(name = "expires_at", nullable = false)
     private OffsetDateTime expiresAt;
-
-    /** Client IP / user-agent string stored for audit purposes. */
-    @Column(name = "device_info", length = 255)
-    private String deviceInfo;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")

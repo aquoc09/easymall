@@ -3,7 +3,7 @@ package com.quocnva.easymall.entity;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 
 /**
  * TempUploadEntity — "trạm trung chuyển" cho ảnh đã upload lên S3.
@@ -36,12 +36,12 @@ public class TempUploadEntity {
     private String url;
 
     @Column(name = "created_at", nullable = false, updatable = false)
-    private LocalDateTime createdAt;
+    private OffsetDateTime createdAt;
 
     @PrePersist
     protected void onCreate() {
         if (createdAt == null) {
-            createdAt = LocalDateTime.now();
+            createdAt = OffsetDateTime.now();
         }
     }
 }

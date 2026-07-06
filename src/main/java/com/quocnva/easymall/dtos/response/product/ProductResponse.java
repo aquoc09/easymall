@@ -4,7 +4,7 @@ import com.quocnva.easymall.enums.TargetGender;
 import lombok.*;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Map;
 
@@ -43,7 +43,17 @@ public class ProductResponse {
     private BigDecimal lengthM;
     private BigDecimal widthM;
     private BigDecimal heightM;
-    private LocalDateTime createdAt;
+    private OffsetDateTime createdAt;
+    private OffsetDateTime updatedAt;
+
+    // Denormalized stats
+    private BigDecimal minPrice;
+    private BigDecimal maxPrice;
+    private Integer viewCount;
+    private Integer soldCount;
+    private BigDecimal ratingAvg;
+    private Integer ratingCount;
+    private BigDecimal popularityScore;
 
     private List<ProductVariantResponse> variants;
     private List<ProductImageResponse> images;
