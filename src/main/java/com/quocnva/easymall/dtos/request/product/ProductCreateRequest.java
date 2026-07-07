@@ -7,6 +7,7 @@ import lombok.*;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
 
 @Getter
 @Setter
@@ -34,7 +35,7 @@ public class ProductCreateRequest {
      * options_config — JSON string tự do từ client.
      * Service sẽ validate format JSON trước khi lưu.
      */
-    private String optionsConfig;
+    private Map<String, Object> optionsConfig;
 
     /**
      * product_tags — danh sách tag. Ví dụ: ["vintage", "oversize"].

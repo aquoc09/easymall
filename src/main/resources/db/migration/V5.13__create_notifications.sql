@@ -9,7 +9,6 @@ CREATE TABLE IF NOT EXISTS notifications (
     title             VARCHAR(200) NOT NULL,
     content           TEXT NOT NULL,
     notification_type VARCHAR(50) NOT NULL,   -- ORDER_UPDATE / SYSTEM / PROMOTION ...
-    reference_id      BIGINT NULL,            -- order_id / product_id tuỳ notification_type
     is_read           BOOLEAN DEFAULT FALSE,
     created_at        TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
 );

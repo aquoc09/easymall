@@ -17,9 +17,6 @@ import java.time.OffsetDateTime;
  *   <li>{@code REVIEW_REPLY}  — người bán trả lời đánh giá</li>
  * </ul>
  *
- * <p>{@code reference_id}: ID liên kết tùy context — order_id nếu ORDER_UPDATE,
- * product_id nếu PROMOTION, v.v.
- *
  * <p>TODO [BUSINESS LOGIC - cần implement sau]:
  * <ul>
  *   <li>NotificationService.send(): tạo record và push realtime qua WebSocket / FCM</li>
@@ -58,10 +55,6 @@ public class NotificationEntity {
     /** ORDER_UPDATE / SYSTEM / PROMOTION / REVIEW_REPLY */
     @Column(name = "notification_type", nullable = false, length = 50)
     private String notificationType;
-
-    /** Tuỳ notification_type: order_id, product_id, v.v. */
-    @Column(name = "reference_id")
-    private Long referenceId;
 
     @Builder.Default
     @Column(name = "is_read", nullable = false)

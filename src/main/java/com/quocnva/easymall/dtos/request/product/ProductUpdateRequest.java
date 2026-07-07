@@ -7,6 +7,7 @@ import lombok.*;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
 
 @Getter
 @Setter
@@ -31,7 +32,7 @@ public class ProductUpdateRequest {
     @Min(value = 0, message = "{validation.maxOrderQuantity.min}")
     private Integer maxOrderQuantity;
 
-    private String optionsConfig;
+    private Map<String, Object> optionsConfig;
 
     private List<String> productTags;
 

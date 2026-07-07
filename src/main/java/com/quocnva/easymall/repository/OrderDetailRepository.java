@@ -12,4 +12,6 @@ public interface OrderDetailRepository extends JpaRepository<OrderDetailEntity, 
     List<OrderDetailEntity> findByOrder(OrderEntity order);
 
     Optional<OrderDetailEntity> findByOrderAndVariant_VariantId(OrderEntity order, Long variantId);
+
+    boolean existsByVariant_VariantId(Long variantId);
 }

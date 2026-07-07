@@ -15,6 +15,7 @@ import com.quocnva.easymall.exception.AppException;
 import com.quocnva.easymall.exception.ErrorCode;
 import com.quocnva.easymall.mapper.ProductMapper;
 import com.quocnva.easymall.repository.CategoryRepository;
+import com.quocnva.easymall.repository.OrderDetailRepository;
 import com.quocnva.easymall.repository.ProductImageRepository;
 import com.quocnva.easymall.repository.ProductRepository;
 import com.quocnva.easymall.repository.ProductVariantRepository;
@@ -38,6 +39,7 @@ public class ProductServiceImpl implements ProductService {
     private final CategoryRepository categoryRepository;
     private final ProductMapper productMapper;
     private final TempUploadRepository tempUploadRepository;
+    private final OrderDetailRepository orderDetailRepository;
     private final AwsS3Properties awsS3Properties;
 
     // ══════════════════════════════════════════════════════════════════
@@ -108,10 +110,8 @@ public class ProductServiceImpl implements ProductService {
         // nhưng để rõ ý định giữ nguyên logic variants/images riêng biệt ta vẫn tách ở đây.
         // (Không cần if-block nữa — mapper tự skip null)
 
-        // Variants — orphan removal qua cascade + clear + re-add
+        // Variants — update existing, create new, soft-delete missing
         if (request.getVariants() != null) {
-            product.getVariants().clear();
-            productRepository.save(product); // flush orphan removal
             buildAndSaveVariants(request.getVariants(), product, productId);
         }
 
@@ -228,17 +228,14 @@ public class ProductServiceImpl implements ProductService {
         if (variantRequests == null || variantRequests.isEmpty()) return;
 
         Long idForSku = productIdForSku != null ? productIdForSku : product.getProductId();
+        
+        java.util.Set<String> requestSkus = new java.util.HashSet<>();
 
         for (ProductVariantRequest varReq : variantRequests) {
-            ProductVariantEntity variant = productMapper.toVariantEntity(varReq);
-            variant.setProduct(product);
-            variant.setIsActive(true);
-            variant.setLockedStock(0);
-
-            // Sinh SKU nếu không có
+            // Sinh SKU
             String sku;
             String rawSku = varReq.getSkuCode();
-            // Strip dấu ngoặc kép thừa nếu FE gửi "\"SKU-005\""
+            // Strip dấu ngoặc kép thừa
             if (rawSku != null) {
                 rawSku = rawSku.replaceAll("^\"+|\"+$", "").trim();
             }
@@ -249,43 +246,92 @@ public class ProductServiceImpl implements ProductService {
                 boolean isSimpleVariant = varReq.getVariantAttributes() == null
                         || varReq.getVariantAttributes().isEmpty();
                 if (isSimpleVariant) {
-                    // Sản phẩm đơn giản (không có thuộc tính biến thể)
-                    // SKU pattern: {CAT}-{productId}-DEFAULT
                     sku = catCode + "-" + idForSku + "-DEFAULT";
                 } else {
-                    // Sản phẩm có variant: dùng SkuGenerator với attributes
                     sku = SkuGenerator.generate(catCode, idForSku, varReq.getVariantAttributes());
                 }
             }
+            requestSkus.add(sku);
 
-            if (productVariantRepository.existsBySkuCode(sku)) {
-                throw new AppException(ErrorCode.SKU_ALREADY_EXISTS);
-            }
-            variant.setSkuCode(sku);
+            // Tìm variant đã tồn tại trong product (update mode)
+            ProductVariantEntity existingVariant = product.getVariants().stream()
+                    .filter(v -> v.getSkuCode() != null && v.getSkuCode().equals(sku))
+                    .findFirst()
+                    .orElse(null);
 
-            if (varReq.getStockQuantity() != null) {
-                variant.setStockQuantity(varReq.getStockQuantity());
+            if (existingVariant != null) {
+                // Update properties
+                existingVariant.setPrice(varReq.getPrice());
+                existingVariant.setCostPrice(varReq.getCostPrice());
+                if (varReq.getVariantAttributes() != null) {
+                    existingVariant.setVariantAttributes(varReq.getVariantAttributes());
+                }
+                if (varReq.getStockQuantity() != null) {
+                    existingVariant.setStockQuantity(varReq.getStockQuantity());
+                }
+                existingVariant.setIsActive(true); // khôi phục nếu từng bị soft delete
+
+                // Image handling
+                String rawImageUrl = varReq.getVariantImage();
+                if (rawImageUrl != null && !rawImageUrl.isBlank()) {
+                    rawImageUrl = rawImageUrl.replaceAll("^\"+|\"+$", "").trim();
+                    String s3Key = rawImageUrl.startsWith("http")
+                            ? rawImageUrl.replaceFirst(awsS3Properties.getBaseUrl() + "/?", "")
+                            : rawImageUrl;
+                    existingVariant.setVariantImage(s3Key);
+                    tempUploadRepository.deleteByUrl(rawImageUrl.startsWith("http")
+                            ? rawImageUrl
+                            : awsS3Properties.getBaseUrl() + "/" + s3Key);
+                }
             } else {
-                variant.setStockQuantity(0);
-            }
+                // Create new
+                if (productVariantRepository.existsBySkuCode(sku)) {
+                    throw new AppException(ErrorCode.SKU_ALREADY_EXISTS);
+                }
+                ProductVariantEntity variant = productMapper.toVariantEntity(varReq);
+                variant.setProduct(product);
+                variant.setIsActive(true);
+                variant.setLockedStock(0);
+                variant.setSkuCode(sku);
 
-            productVariantRepository.save(variant);
-            product.getVariants().add(variant);
+                if (varReq.getStockQuantity() != null) {
+                    variant.setStockQuantity(varReq.getStockQuantity());
+                } else {
+                    variant.setStockQuantity(0);
+                }
 
-            // Xóa bản ghi trung chuyển cho ảnh variant — đã được liên kết chính thức
-            String rawImageUrl = varReq.getVariantImage();
-            if (rawImageUrl != null && !rawImageUrl.isBlank()) {
-                // Strip dấu ngoặc kép thừa
-                rawImageUrl = rawImageUrl.replaceAll("^\"+|\"+$", "").trim();
-                // Nếu FE gửi full URL thì chỉ lưu S3 key; nếu gửi key thì giữ nguyên
-                String s3Key = rawImageUrl.startsWith("http")
-                        ? rawImageUrl.replaceFirst(awsS3Properties.getBaseUrl() + "/?", "")
-                        : rawImageUrl;
-                variant.setVariantImage(s3Key);
-                tempUploadRepository.deleteByUrl(rawImageUrl.startsWith("http")
-                        ? rawImageUrl
-                        : awsS3Properties.getBaseUrl() + "/" + s3Key);
+                // Image handling
+                String rawImageUrl = varReq.getVariantImage();
+                if (rawImageUrl != null && !rawImageUrl.isBlank()) {
+                    rawImageUrl = rawImageUrl.replaceAll("^\"+|\"+$", "").trim();
+                    String s3Key = rawImageUrl.startsWith("http")
+                            ? rawImageUrl.replaceFirst(awsS3Properties.getBaseUrl() + "/?", "")
+                            : rawImageUrl;
+                    variant.setVariantImage(s3Key);
+                    tempUploadRepository.deleteByUrl(rawImageUrl.startsWith("http")
+                            ? rawImageUrl
+                            : awsS3Properties.getBaseUrl() + "/" + s3Key);
+                }
+
+                productVariantRepository.save(variant);
+                product.getVariants().add(variant);
             }
+        }
+
+        // Soft-delete (deactivate) or hard-delete các variants không có trong request (chỉ áp dụng khi update)
+        if (productIdForSku != null) {
+            java.util.List<ProductVariantEntity> toRemove = new java.util.ArrayList<>();
+            for (ProductVariantEntity existing : product.getVariants()) {
+                if (!requestSkus.contains(existing.getSkuCode())) {
+                    boolean isReferenced = orderDetailRepository.existsByVariant_VariantId(existing.getVariantId());
+                    if (isReferenced) {
+                        existing.setIsActive(false); // Soft delete vì đã có đơn hàng
+                    } else {
+                        toRemove.add(existing); // Hard delete vì chưa từng được mua
+                    }
+                }
+            }
+            product.getVariants().removeAll(toRemove);
         }
     }
 

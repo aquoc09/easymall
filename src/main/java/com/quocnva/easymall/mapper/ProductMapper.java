@@ -74,10 +74,9 @@ public abstract class ProductMapper {
         if (request.getProductTags() != null) {
             entity.setProductTags(toJsonString(request.getProductTags()));
         }
-        // optionsConfig: đã là String, chỉ validate format
+        // optionsConfig: Map<String, Object> -> JSON string
         if (request.getOptionsConfig() != null) {
-            validateJsonString(request.getOptionsConfig());
-            entity.setOptionsConfig(request.getOptionsConfig());
+            entity.setOptionsConfig(toJsonString(request.getOptionsConfig()));
         }
     }
 
@@ -115,10 +114,9 @@ public abstract class ProductMapper {
         if (request.getProductTags() != null) {
             entity.setProductTags(toJsonString(request.getProductTags()));
         }
-        // optionsConfig: validate JSON format rồi set
+        // optionsConfig: Map<String, Object> -> JSON string
         if (request.getOptionsConfig() != null) {
-            validateJsonString(request.getOptionsConfig());
-            entity.setOptionsConfig(request.getOptionsConfig());
+            entity.setOptionsConfig(toJsonString(request.getOptionsConfig()));
         }
     }
 
