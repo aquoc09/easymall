@@ -111,6 +111,8 @@ public enum ErrorCode {
     FILE_TOO_LARGE(15002, "error.upload.file-too-large", HttpStatus.PAYLOAD_TOO_LARGE),
     S3_UPLOAD_FAILURE(15003, "error.upload.s3-failure", HttpStatus.INTERNAL_SERVER_ERROR),
     EMPTY_FILE(15004, "error.upload.empty-file", HttpStatus.BAD_REQUEST),
+    // ── Slider ──────────────────────────────────────────────────────────────────────────────
+    SLIDER_NOT_FOUND(16001, "error.slider-not-found", HttpStatus.NOT_FOUND),
     ;
 
 
