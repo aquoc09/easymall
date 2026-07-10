@@ -27,6 +27,7 @@ public enum ErrorCode {
     // ── Resource ─────────────────────────────────────────────────────────
     RESOURCE_NOT_FOUND(3001, "error.resource-not-found", HttpStatus.NOT_FOUND),
     ACCESS_DENIED(3002, "error.access-denied", HttpStatus.FORBIDDEN),
+    INVALID_STATUS_TRANSITION(3003, "error.invalid-status-transition", HttpStatus.BAD_REQUEST),
 
     // ── Rate Limiting & Token ─────────────────────────────────────────────
     RATE_LIMIT_EXCEEDED(1007, "error.rate-limit-exceeded", HttpStatus.TOO_MANY_REQUESTS),

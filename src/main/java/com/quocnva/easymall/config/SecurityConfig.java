@@ -65,6 +65,8 @@ public class SecurityConfig {
             "/api/v1/ghn/webhook",
             // Reviews public
             "/api/v1/reviews/product/**",
+            "/api/v1/sliders/public",
+            "/api/v1/contacts"
     };
 
     @Bean
