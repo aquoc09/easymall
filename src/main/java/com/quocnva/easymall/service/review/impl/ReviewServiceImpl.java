@@ -19,6 +19,7 @@ import org.springframework.data.domain.Pageable;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.beans.factory.annotation.Value;
 
 import java.util.HashMap;
 import java.util.List;
@@ -157,14 +158,23 @@ public class ReviewServiceImpl implements ReviewService {
         reviewRepository.delete(review);
     }
 
+    @Value("${storage.base-url}")
+    private String storageBaseUrl;
+
     // ── Mapper nội bộ ──────────────────────────────────────────────────────
 
     private ReviewResponse toResponse(ReviewEntity review) {
         List<ReviewImageResponse> imageResponses = review.getImages().stream()
-                .map(img -> ReviewImageResponse.builder()
-                        .reviewImageId(img.getReviewImageId())
-                        .imageUrl(img.getImageUrl())
-                        .build())
+                .map(img -> {
+                    String fullImageUrl = img.getImageUrl();
+                    if (fullImageUrl != null && !fullImageUrl.startsWith("http")) {
+                        fullImageUrl = storageBaseUrl + "/" + fullImageUrl;
+                    }
+                    return ReviewImageResponse.builder()
+                            .reviewImageId(img.getReviewImageId())
+                            .imageUrl(fullImageUrl)
+                            .build();
+                })
                 .collect(Collectors.toList());
 
         return ReviewResponse.builder()

@@ -78,6 +78,7 @@ ghn:
   url: ${GHN_API_URL}
   shop-id: ${GHN_SHOP_ID}
   ward-code: ${GHN_WARD_CODE}
+  district-id: ${GHN_DISTRICT_ID}
 
 aws:
   s3:

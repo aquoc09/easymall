@@ -115,5 +115,26 @@ public class UploadController {
                 .result(response)
                 .build();
     }
+
+    /**
+     * Upload ảnh slider lên S3.
+     *
+     * <pre>
+     * POST /api/v1/uploads/image/sliders
+     * Content-Type: multipart/form-data
+     * Body: file (image file)
+     * </pre>
+     */
+    @PostMapping(value = "/image/sliders", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ApiResponse<UploadImageResponse> uploadSliderImage(
+            @RequestPart("file") MultipartFile file) {
+
+        UploadImageResponse response = storageService.uploadImage(file, UploadConstants.FOLDER_SLIDERS);
+
+        return ApiResponse.<UploadImageResponse>builder()
+                .message(Translator.toLocale("success.upload.image"))
+                .result(response)
+                .build();
+    }
 }
 

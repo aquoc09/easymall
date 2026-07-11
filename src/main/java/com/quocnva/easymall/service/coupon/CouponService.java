@@ -23,6 +23,8 @@ public interface CouponService {
 
     CouponApplyResponse previewApply(CouponApplyRequest request, String userEmail);
 
+    java.util.List<CouponResponse> getAvailableCoupons();
+
     /**
      * Validate coupon tại thời điểm checkout và trả về entity đã lock.
      * Internal — gọi từ OrderService trong cùng transaction.

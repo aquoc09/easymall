@@ -5,11 +5,15 @@ import com.quocnva.easymall.dtos.request.category.CategoryUpdateRequest;
 import com.quocnva.easymall.dtos.response.category.CategoryResponse;
 import com.quocnva.easymall.entity.CategoryEntity;
 import org.springframework.stereotype.Component;
+import org.springframework.beans.factory.annotation.Value;
 
 import java.util.ArrayList;
 
 @Component
 public class CategoryMapper {
+
+    @Value("${storage.base-url}")
+    private String storageBaseUrl;
 
     /**
      * Cast Integer → Short an toàn (DB schema dùng SMALLINT = int2).
@@ -42,6 +46,11 @@ public class CategoryMapper {
     public CategoryResponse toResponse(CategoryEntity entity) {
         if (entity == null) return null;
 
+        String fullIconUrl = entity.getIconUrl();
+        if (fullIconUrl != null && !fullIconUrl.startsWith("http")) {
+            fullIconUrl = storageBaseUrl + "/" + fullIconUrl;
+        }
+
         return CategoryResponse.builder()
                 .categoryId(entity.getCategoryId())
                 .categoryCode(entity.getCategoryCode())
@@ -49,7 +58,7 @@ public class CategoryMapper {
                 .categoryStatus(entity.getCategoryStatus() != null ? entity.getCategoryStatus().intValue() : null)
                 .level(entity.getLevel())
                 .parentId(entity.getParentId())
-                .iconUrl(entity.getIconUrl())
+                .iconUrl(fullIconUrl)
                 .displayOrder(entity.getDisplayOrder())
                 .updatedAt(entity.getUpdatedAt())
                 .children(new ArrayList<>())

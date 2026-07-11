@@ -72,7 +72,7 @@ public class CouponController {
                 .build();
     }
 
-    // ── USER PREVIEW ───────────────────────────────────────────────────────
+    // ── USER ───────────────────────────────────────────────────────
 
     @PostMapping("/preview")
     @PreAuthorize("@permissionChecker.has('coupon:apply')")
@@ -81,6 +81,14 @@ public class CouponController {
             Authentication authentication) {
         return ApiResponse.<CouponApplyResponse>builder()
                 .result(couponService.previewApply(request, authentication.getName()))
+                .build();
+    }
+
+    @GetMapping("/available")
+    public ApiResponse<java.util.List<CouponResponse>> getAvailableCoupons() {
+        return ApiResponse.<java.util.List<CouponResponse>>builder()
+                .result(couponService.getAvailableCoupons())
+                .message("Available coupons fetched successfully")
                 .build();
     }
 }

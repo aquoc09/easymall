@@ -31,4 +31,9 @@ public class GhnProperties {
      * Được dùng để tra cứu districtId kho qua GhnMasterDataService.
      */
     private String wardCode;
+
+    /**
+     * District ID của kho gửi hàng.
+     */
+    private Integer districtId;
 }

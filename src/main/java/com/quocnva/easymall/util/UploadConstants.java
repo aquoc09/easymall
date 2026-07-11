@@ -41,5 +41,8 @@ public final class UploadConstants {
 
     /** Folder prefix cho icon category trên S3. */
     public static final String FOLDER_CATEGORIES = "categories";
+
+    /** Folder prefix cho ảnh slider trên S3. */
+    public static final String FOLDER_SLIDERS = "sliders";
 }
 

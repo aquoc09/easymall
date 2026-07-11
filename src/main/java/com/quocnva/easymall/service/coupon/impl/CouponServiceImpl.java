@@ -112,6 +112,15 @@ public class CouponServiceImpl implements CouponService {
         return couponMapper.toApplyResponse(coupon, request.getOrderAmount(), discount);
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    public List<CouponResponse> getAvailableCoupons() {
+        OffsetDateTime now = OffsetDateTime.now();
+        return couponRepository.findAvailableCoupons(now).stream()
+                .map(couponMapper::toResponse)
+                .toList();
+    }
+
     // ── INTERNAL — gọi từ OrderService trong cùng @Transactional ──────────
 
     @Override

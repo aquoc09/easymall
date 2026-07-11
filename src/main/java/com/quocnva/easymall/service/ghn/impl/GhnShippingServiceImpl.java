@@ -10,7 +10,6 @@ import com.quocnva.easymall.dtos.response.ghn.GhnServiceResponse;
 import com.quocnva.easymall.dtos.response.ghn.GhnShippingFeeResponse;
 import com.quocnva.easymall.exception.AppException;
 import com.quocnva.easymall.exception.ErrorCode;
-import com.quocnva.easymall.service.ghn.GhnMasterDataService;
 import com.quocnva.easymall.service.ghn.GhnShippingService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -31,12 +30,10 @@ public class GhnShippingServiceImpl implements GhnShippingService {
     private final GhnProperties ghnProperties;
     private final RestTemplate restTemplate;
     private final ObjectMapper objectMapper;
-    private final GhnMasterDataService ghnMasterDataService;
 
     @Override
     public List<GhnServiceResponse> getAvailableServices(Integer toDistrictId) {
-        // fromDistrictId: tra cứu từ wardCode của kho
-        Integer fromDistrictId = resolveShopDistrictId();
+        Integer fromDistrictId = ghnProperties.getDistrictId();
 
         Map<String, Object> body = Map.of(
                 "shop_id", ghnProperties.getShopId(),
@@ -53,16 +50,26 @@ public class GhnShippingServiceImpl implements GhnShippingService {
 
     @Override
     public GhnShippingFeeResponse calculateFee(ShippingFeeRequest request) {
-        Integer fromDistrictId = resolveShopDistrictId();
+        Integer fromDistrictId = ghnProperties.getDistrictId();
 
-        // Bước 1: Lấy danh sách service hợp lệ (chọn serviceId rẻ nhất nếu không truyền)
+        // Bước 1: Lấy danh sách service hợp lệ cho tuyến đường
+        List<GhnServiceResponse> services = getAvailableServices(request.getToDistrictId());
+        if (services.isEmpty()) {
+            throw new AppException(ErrorCode.GHN_SERVICE_UNAVAILABLE);
+        }
+
         Integer serviceId = request.getServiceId();
         String shortName = "";
-        if (serviceId == null) {
-            List<GhnServiceResponse> services = getAvailableServices(request.getToDistrictId());
-            if (services.isEmpty()) {
-                throw new AppException(ErrorCode.GHN_SERVICE_UNAVAILABLE);
-            }
+
+        if (serviceId != null) {
+            // Nếu có truyền serviceId, kiểm tra xem có hợp lệ cho tuyến đường này không
+            GhnServiceResponse matchedService = services.stream()
+                    .filter(s -> s.getServiceId().equals(request.getServiceId()))
+                    .findFirst()
+                    .orElseThrow(() -> new AppException(ErrorCode.GHN_SERVICE_UNAVAILABLE));
+            shortName = matchedService.getShortName();
+        } else {
+            // Nếu không truyền, mặc định lấy service đầu tiên (thường là rẻ/chuẩn nhất)
             serviceId = services.get(0).getServiceId();
             shortName = services.get(0).getShortName();
         }
@@ -112,21 +119,6 @@ public class GhnShippingServiceImpl implements GhnShippingService {
     }
 
     // ── Helpers ───────────────────────────────────────────────────────────────
-
-    private Integer resolveShopDistrictId() {
-        // Tra cứu districtId kho từ wardCode config
-        // Tìm ward trong list wards của district (brute-force với cache)
-        // Đây là cách đơn giản: lấy ward từ GHN và tra ngược districtId
-        return ghnMasterDataService.getWards(0).stream()
-                .filter(w -> ghnProperties.getWardCode().equals(w.getWardCode()))
-                .map(w -> w.getDistrictId())
-                .findFirst()
-                .orElseGet(() -> {
-                    // Fallback: tìm qua tất cả wards của tất cả districts (chỉ chạy 1 lần rồi cached)
-                    log.warn("[GHN] Ward lookup fallback — consider adding ghn.district-id to config");
-                    throw new AppException(ErrorCode.GHN_INTEGRATION_ERROR);
-                });
-    }
 
     private <T> List<T> callGhn(String url, Object body, TypeReference<List<T>> typeRef) {
         try {

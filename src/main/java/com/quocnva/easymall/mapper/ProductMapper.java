@@ -150,19 +150,9 @@ public abstract class ProductMapper {
         if (entity.getVariants() != null) {
             response.setVariants(toVariantResponseList(entity.getVariants()));
         }
-        // images — prepend S3 base URL vào imageUrl
+        // images — map thông qua toImageResponseList (sẽ trigger afterToImageResponse)
         if (entity.getImages() != null) {
-            response.setImages(
-                entity.getImages().stream()
-                    .map(img -> {
-                        ProductImageResponse r = toImageResponse(img);
-                        if (img.getImageUrl() != null && !img.getImageUrl().startsWith("http")) {
-                            r.setImageUrl(storageBaseUrl + "/" + img.getImageUrl());
-                        }
-                        return r;
-                    })
-                    .toList()
-            );
+            response.setImages(toImageResponseList(entity.getImages()));
         }
     }
 
@@ -214,6 +204,16 @@ public abstract class ProductMapper {
     // ══════════════════════════════════════════════════════════════════
 
     public abstract ProductImageResponse toImageResponse(ProductImageEntity entity);
+
+    @AfterMapping
+    protected void afterToImageResponse(ProductImageEntity entity, @MappingTarget ProductImageResponse response) {
+        String img = stripJsonQuotes(entity.getImageUrl());
+        if (img != null && !img.startsWith("http")) {
+            response.setImageUrl(storageBaseUrl + "/" + img);
+        } else {
+            response.setImageUrl(img);
+        }
+    }
 
     public abstract List<ProductImageResponse> toImageResponseList(List<ProductImageEntity> entities);
 
