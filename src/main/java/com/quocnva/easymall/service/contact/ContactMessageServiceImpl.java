@@ -46,8 +46,8 @@ public class ContactMessageServiceImpl implements ContactMessageService {
 
         ContactMessageEntity entity = ContactMessageEntity.builder()
                 .user(user)
-                .guestName(user != null ? null : request.getGuestName())
-                .guestEmail(user != null ? null : request.getGuestEmail())
+                .guestName(user != null ? user.getFullName() : request.getGuestName())
+                .guestEmail(user != null ? user.getEmail() : request.getGuestEmail())
                 .subject(HtmlUtils.htmlEscape(request.getSubject()))
                 .content(HtmlUtils.htmlEscape(request.getContent()))
                 .status("PENDING")
