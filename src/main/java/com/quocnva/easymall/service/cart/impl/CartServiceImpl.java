@@ -16,6 +16,7 @@ import com.quocnva.easymall.repository.ProductVariantRepository;
 import com.quocnva.easymall.repository.UserRepository;
 import com.quocnva.easymall.service.cart.CartService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -256,6 +257,9 @@ public class CartServiceImpl implements CartService {
         }
     }
 
+    @Value("${storage.base-url}")
+    private String baseUrl;
+
     /**
      * Xây dựng CartResponse từ CartEntity.
      * Tính toán availability cho từng item và tổng tiền của giỏ.
@@ -264,6 +268,11 @@ public class CartServiceImpl implements CartService {
         List<CartItemResponse> itemResponses = cart.getItems().stream()
                 .map(item -> {
                     CartItemResponse dto = cartMapper.toCartItemResponse(item);
+                    
+                    if (dto.getVariantImage() != null && !dto.getVariantImage().startsWith("http")) {
+                        dto.setVariantImage(baseUrl + "/" + dto.getVariantImage());
+                    }
+                    
                     ProductVariantEntity variant = item.getVariant();
 
                     // Xác định trạng thái availability
