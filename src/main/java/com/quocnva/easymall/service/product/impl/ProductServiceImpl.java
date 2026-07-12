@@ -253,9 +253,17 @@ public class ProductServiceImpl implements ProductService {
             }
             requestSkus.add(sku);
 
-            // Tìm variant đã tồn tại trong product (update mode)
+            // Tìm variant đã tồn tại trong product (update mode) bằng VariantAttributes thay vì SKU
             ProductVariantEntity existingVariant = product.getVariants().stream()
-                    .filter(v -> v.getSkuCode() != null && v.getSkuCode().equals(sku))
+                    .filter(v -> {
+                        java.util.Map<String, String> reqAttrs = varReq.getVariantAttributes();
+                        java.util.Map<String, String> dbAttrs = v.getVariantAttributes();
+                        boolean reqEmpty = (reqAttrs == null || reqAttrs.isEmpty());
+                        boolean dbEmpty = (dbAttrs == null || dbAttrs.isEmpty());
+                        if (reqEmpty && dbEmpty) return true;
+                        if (!reqEmpty && !dbEmpty) return reqAttrs.equals(dbAttrs);
+                        return false;
+                    })
                     .findFirst()
                     .orElse(null);
 
@@ -263,6 +271,9 @@ public class ProductServiceImpl implements ProductService {
                 // Update properties
                 existingVariant.setPrice(varReq.getPrice());
                 existingVariant.setCostPrice(varReq.getCostPrice());
+                // Cập nhật lại SKU phòng trường hợp category code thay đổi làm SKU bị lệch
+                existingVariant.setSkuCode(sku);
+
                 if (varReq.getVariantAttributes() != null) {
                     existingVariant.setVariantAttributes(varReq.getVariantAttributes());
                 }
