@@ -19,4 +19,9 @@ public interface CartItemRepository extends JpaRepository<CartItemEntity, Long> 
 
     /** Xóa cart items sau khi checkout thành công */
     void deleteAllByCartItemIdIn(List<Long> cartItemIds);
+
+    /** Xóa cart items khi variant bị hard delete */
+    @org.springframework.data.jpa.repository.Modifying
+    @org.springframework.data.jpa.repository.Query("DELETE FROM CartItemEntity c WHERE c.variant.variantId IN :variantIds")
+    void deleteByVariant_VariantIdIn(@org.springframework.data.repository.query.Param("variantIds") List<Long> variantIds);
 }

@@ -157,13 +157,18 @@ public class OrderServiceImpl implements OrderService {
 
         List<OrderDetailEntity> details = new ArrayList<>();
         for (CartItemEntity item : cartItems) {
-            BigDecimal itemTotal = item.getVariant().getPrice()
+            ProductVariantEntity variant = item.getVariant();
+            BigDecimal itemTotal = variant.getPrice()
                     .multiply(BigDecimal.valueOf(item.getQuantity()));
             details.add(OrderDetailEntity.builder()
                     .order(order)
-                    .variant(item.getVariant())
+                    .variant(variant)
+                    .productName(variant.getProduct().getProductName())
+                    .variantAttributes(variant.getVariantAttributes())
+                    .skuCode(variant.getSkuCode())
+                    .variantImage(variant.getVariantImage())
                     .numOfProduct(item.getQuantity())
-                    .orderDetailPrice(item.getVariant().getPrice())
+                    .orderDetailPrice(variant.getPrice())
                     .totalMoney(itemTotal)
                     .build());
         }

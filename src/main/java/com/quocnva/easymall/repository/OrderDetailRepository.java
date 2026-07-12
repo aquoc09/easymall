@@ -14,4 +14,8 @@ public interface OrderDetailRepository extends JpaRepository<OrderDetailEntity, 
     Optional<OrderDetailEntity> findByOrderAndVariant_VariantId(OrderEntity order, Long variantId);
 
     boolean existsByVariant_VariantId(Long variantId);
+
+    @org.springframework.data.jpa.repository.Modifying
+    @org.springframework.data.jpa.repository.Query("UPDATE OrderDetailEntity od SET od.variant = null WHERE od.variant.variantId IN :variantIds")
+    void nullifyVariantReferences(@org.springframework.data.repository.query.Param("variantIds") List<Long> variantIds);
 }

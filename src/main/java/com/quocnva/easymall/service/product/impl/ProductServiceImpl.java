@@ -49,6 +49,7 @@ public class ProductServiceImpl implements ProductService {
     private final ProductMapper productMapper;
     private final TempUploadRepository tempUploadRepository;
     private final OrderDetailRepository orderDetailRepository;
+    private final com.quocnva.easymall.repository.CartItemRepository cartItemRepository;
     private final AwsS3Properties awsS3Properties;
 
     // ══════════════════════════════════════════════════════════════════
@@ -265,12 +266,19 @@ public class ProductServiceImpl implements ProductService {
         ProductEntity product = productRepository.findById(productId)
                 .orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_FOUND));
 
-        // Soft delete: ẩn sản phẩm khỏi storefront
-        product.setInStock(false);
-        product.setInPopular(false);
-        // Deactivate tất cả variants
-        product.getVariants().forEach(v -> v.setIsActive(false));
-        productRepository.save(product);
+        List<Long> variantIds = product.getVariants().stream()
+                .map(ProductVariantEntity::getVariantId)
+                .toList();
+
+        if (!variantIds.isEmpty()) {
+            // Ngắt kết nối khóa ngoại trong OrderDetail
+            orderDetailRepository.nullifyVariantReferences(variantIds);
+            // Xóa các CartItems đang chứa variant này
+            cartItemRepository.deleteByVariant_VariantIdIn(variantIds);
+        }
+
+        // Hard delete toàn bộ product và các variants (thông qua Cascade)
+        productRepository.delete(product);
     }
 
     // ══════════════════════════════════════════════════════════════════
@@ -409,20 +417,24 @@ public class ProductServiceImpl implements ProductService {
             }
         }
 
-        // Soft-delete (deactivate) or hard-delete các variants không có trong request (chỉ áp dụng khi update)
+        // Hard-delete các variants không có trong request (chỉ áp dụng khi update)
         if (productIdForSku != null) {
             java.util.List<ProductVariantEntity> toRemove = new java.util.ArrayList<>();
             for (ProductVariantEntity existing : product.getVariants()) {
                 if (!requestSkus.contains(existing.getSkuCode())) {
-                    boolean isReferenced = orderDetailRepository.existsByVariant_VariantId(existing.getVariantId());
-                    if (isReferenced) {
-                        existing.setIsActive(false); // Soft delete vì đã có đơn hàng
-                    } else {
-                        toRemove.add(existing); // Hard delete vì chưa từng được mua
-                    }
+                    toRemove.add(existing);
                 }
             }
-            product.getVariants().removeAll(toRemove);
+            if (!toRemove.isEmpty()) {
+                java.util.List<Long> variantIdsToRemove = toRemove.stream()
+                        .map(ProductVariantEntity::getVariantId)
+                        .toList();
+                // Ngắt kết nối khóa ngoại
+                orderDetailRepository.nullifyVariantReferences(variantIdsToRemove);
+                cartItemRepository.deleteByVariant_VariantIdIn(variantIdsToRemove);
+                // Xóa cứng khỏi product
+                product.getVariants().removeAll(toRemove);
+            }
         }
     }
 

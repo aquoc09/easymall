@@ -32,11 +32,25 @@ public class OrderDetailEntity {
     @Column(name = "item_status", nullable = false, length = 30)
     private String itemStatus = "NORMAL";
 
+    @Column(name = "product_name")
+    private String productName;
+
+    @org.hibernate.annotations.JdbcTypeCode(org.hibernate.type.SqlTypes.JSON)
+    @Column(name = "variant_attributes", columnDefinition = "JSONB")
+    private java.util.Map<String, String> variantAttributes;
+
+    @Column(name = "sku_code", length = 50)
+    private String skuCode;
+
+    @Column(name = "variant_image", length = 500)
+    private String variantImage;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "order_id", nullable = false)
     private OrderEntity order;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "variant_id", nullable = false)
+    @JoinColumn(name = "variant_id", nullable = true)
+    @org.hibernate.annotations.OnDelete(action = org.hibernate.annotations.OnDeleteAction.SET_NULL)
     private ProductVariantEntity variant;
 }

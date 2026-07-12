@@ -30,12 +30,14 @@ public class OrderMapper {
     }
 
     public OrderDetailResponse toDetailResponse(OrderDetailEntity detail) {
+        Long variantId = detail.getVariant() != null ? detail.getVariant().getVariantId() : null;
         return OrderDetailResponse.builder()
                 .orderDetailId(detail.getOrderDetailId())
-                .variantId(detail.getVariant().getVariantId())
-                .skuCode(detail.getVariant().getSkuCode())
-                .productName(detail.getVariant().getProduct().getProductName())
-                .variantAttributes(detail.getVariant().getVariantAttributes())
+                .variantId(variantId)
+                .skuCode(detail.getSkuCode())
+                .productName(detail.getProductName())
+                .variantAttributes(detail.getVariantAttributes())
+                .variantImage(detail.getVariantImage())
                 .price(detail.getOrderDetailPrice())
                 .quantity(detail.getNumOfProduct())
                 .totalMoney(detail.getTotalMoney())

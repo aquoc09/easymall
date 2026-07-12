@@ -16,6 +16,7 @@ public class OrderDetailResponse {
     private String skuCode;
     private String productName;
     private Object variantAttributes;
+    private String variantImage;
     private BigDecimal price;
     private Integer quantity;
     private BigDecimal totalMoney;
