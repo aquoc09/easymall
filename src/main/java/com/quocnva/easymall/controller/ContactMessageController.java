@@ -24,7 +24,10 @@ public class ContactMessageController {
     public ApiResponse<ContactMessageResponse> createContactMessage(
             @Valid @RequestBody ContactMessageRequest request,
             Authentication authentication) {
-        String userEmail = authentication != null ? authentication.getName() : null;
+        String userEmail = null;
+        if (authentication != null && authentication.isAuthenticated() && !"anonymousUser".equals(authentication.getName())) {
+            userEmail = authentication.getName();
+        }
         ContactMessageResponse response = contactMessageService.createMessage(request, userEmail);
         return ApiResponse.<ContactMessageResponse>builder().result(response).build();
     }
