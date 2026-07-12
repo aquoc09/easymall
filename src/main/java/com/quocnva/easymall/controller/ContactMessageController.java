@@ -30,7 +30,7 @@ public class ContactMessageController {
     }
 
     @GetMapping("/contacts/me")
-    @PreAuthorize("hasRole('USER')")
+    @PreAuthorize("isAuthenticated()")
     public ApiResponse<Page<ContactMessageResponse>> getMyContactMessages(
             Authentication authentication,
             Pageable pageable) {
@@ -40,7 +40,7 @@ public class ContactMessageController {
     }
 
     @GetMapping("/admin/contacts")
-    @PreAuthorize("hasRole('ADMIN') and hasAuthority('contact:read')")
+    @PreAuthorize("@permissionChecker.has('contact:read')")
     public ApiResponse<Page<ContactMessageResponse>> getAdminContactMessages(
             @RequestParam(required = false) String status,
             Pageable pageable) {
@@ -49,7 +49,7 @@ public class ContactMessageController {
     }
 
     @PatchMapping("/admin/contacts/{messageId}/status")
-    @PreAuthorize("hasRole('ADMIN') and hasAuthority('contact:update')")
+    @PreAuthorize("@permissionChecker.has('contact:update')")
     public ApiResponse<ContactMessageResponse> updateContactStatus(
             @PathVariable Long messageId,
             @Valid @RequestBody ContactMessageStatusRequest request) {
