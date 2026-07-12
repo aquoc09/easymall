@@ -10,6 +10,15 @@ import com.quocnva.easymall.dtos.response.product.ProductVariantResponse;
 import com.quocnva.easymall.entity.ProductEntity;
 import com.quocnva.easymall.entity.ProductImageEntity;
 import com.quocnva.easymall.entity.ProductVariantEntity;
+import com.quocnva.easymall.dtos.request.product.ProductFilterRequest;
+import com.quocnva.easymall.entity.CategoryEntity;
+import com.quocnva.easymall.repository.specification.ProductSpecification;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
+import java.util.ArrayList;
 
 import com.quocnva.easymall.exception.AppException;
 import com.quocnva.easymall.exception.ErrorCode;
@@ -153,11 +162,82 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<ProductResponse> getAllProducts() {
-        return productRepository.findAll()
-                .stream()
-                .map(productMapper::toResponse)
-                .toList();
+    public Page<ProductResponse> getAllProducts(ProductFilterRequest filter, Pageable pageable) {
+        Specification<ProductEntity> spec = buildSpecification(filter, false);
+        pageable = applyCollectionSorting(filter.getCollection(), pageable);
+        return productRepository.findAll(spec, pageable).map(productMapper::toResponse);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Page<ProductResponse> getPublicProducts(ProductFilterRequest filter, Pageable pageable) {
+        Specification<ProductEntity> spec = buildSpecification(filter, true);
+        pageable = applyCollectionSorting(filter.getCollection(), pageable);
+        return productRepository.findAll(spec, pageable).map(productMapper::toResponse);
+    }
+
+    private Specification<ProductEntity> buildSpecification(ProductFilterRequest filter, boolean isPublic) {
+        Specification<ProductEntity> spec = Specification.where(null);
+
+        if (isPublic) {
+            // Public users always see in-stock products only
+            spec = spec.and(ProductSpecification.isInStock(true));
+        } else if (filter.getInStock() != null) {
+            spec = spec.and(ProductSpecification.isInStock(filter.getInStock()));
+        }
+
+        if (filter.getKeyword() != null && !filter.getKeyword().isBlank()) {
+            spec = spec.and(ProductSpecification.hasKeyword(filter.getKeyword()));
+        }
+
+        if (filter.getCategoryCode() != null && !filter.getCategoryCode().isBlank()) {
+            java.util.Optional<CategoryEntity> categoryOpt = categoryRepository.findByCategoryCode(filter.getCategoryCode());
+            if (categoryOpt.isPresent()) {
+                CategoryEntity category = categoryOpt.get();
+                List<Long> categoryIds = new ArrayList<>();
+                categoryIds.add(category.getCategoryId());
+                // If it's a parent, fetch children
+                if (category.getParentId() == null) {
+                    List<CategoryEntity> children = categoryRepository.findByParentId(category.getCategoryId());
+                    categoryIds.addAll(children.stream().map(CategoryEntity::getCategoryId).toList());
+                }
+                spec = spec.and(ProductSpecification.hasCategory(categoryIds));
+            }
+        }
+
+        if (filter.getInPopular() != null) {
+            spec = spec.and(ProductSpecification.isPopular(filter.getInPopular()));
+        }
+
+        if ("POPULAR".equalsIgnoreCase(filter.getCollection())) {
+            spec = spec.and(ProductSpecification.isPopular(true));
+        }
+
+        if (filter.getMinPrice() != null || filter.getMaxPrice() != null) {
+            spec = spec.and(ProductSpecification.hasPriceBetween(filter.getMinPrice(), filter.getMaxPrice()));
+        }
+
+        if (filter.getMinRating() != null) {
+            spec = spec.and(ProductSpecification.hasRatingGreaterThanEqual(filter.getMinRating()));
+        }
+
+        if (filter.getTargetGender() != null) {
+            spec = spec.and(ProductSpecification.hasTargetGender(filter.getTargetGender()));
+        }
+
+        return spec;
+    }
+
+    private Pageable applyCollectionSorting(String collection, Pageable pageable) {
+        if (collection == null || collection.isBlank()) {
+            return pageable;
+        }
+        if ("NEW_ARRIVALS".equalsIgnoreCase(collection)) {
+            return PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), Sort.by(Sort.Direction.DESC, "createdAt"));
+        } else if ("BEST_SELLERS".equalsIgnoreCase(collection)) {
+            return PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), Sort.by(Sort.Direction.DESC, "soldCount"));
+        }
+        return pageable;
     }
 
     // ══════════════════════════════════════════════════════════════════

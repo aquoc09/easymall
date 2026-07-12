@@ -5,6 +5,9 @@ import com.quocnva.easymall.dtos.request.product.ProductUpdateRequest;
 import com.quocnva.easymall.dtos.response.product.ProductResponse;
 import com.quocnva.easymall.dtos.response.product.ProductVariantResponse;
 
+import com.quocnva.easymall.dtos.request.product.ProductFilterRequest;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import java.util.List;
 
 public interface ProductService {
@@ -17,7 +20,9 @@ public interface ProductService {
 
     ProductResponse getProductBySlug(String slug);
 
-    List<ProductResponse> getAllProducts();
+    Page<ProductResponse> getAllProducts(ProductFilterRequest filter, Pageable pageable);
+
+    Page<ProductResponse> getPublicProducts(ProductFilterRequest filter, Pageable pageable);
 
     List<ProductVariantResponse> getVariantsByProductId(Long productId);
 

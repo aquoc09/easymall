@@ -13,6 +13,11 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
+import com.quocnva.easymall.dtos.request.product.ProductFilterRequest;
 
 @RestController
 @RequestMapping("/api/v1/products")
@@ -29,9 +34,11 @@ public class ProductController {
      * GET /api/v1/products/public — danh sách tất cả sản phẩm (storefront).
      */
     @GetMapping("/public")
-    public ApiResponse<List<ProductResponse>> getAllProductsPublic() {
-        return ApiResponse.<List<ProductResponse>>builder()
-                .result(productService.getAllProducts())
+    public ApiResponse<Page<ProductResponse>> getPublicProducts(
+            @ModelAttribute ProductFilterRequest filter,
+            @PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
+        return ApiResponse.<Page<ProductResponse>>builder()
+                .result(productService.getPublicProducts(filter, pageable))
                 .build();
     }
 
@@ -75,9 +82,11 @@ public class ProductController {
      */
     @GetMapping
     @PreAuthorize("@permissionChecker.has('product:read')")
-    public ApiResponse<List<ProductResponse>> getAllProducts() {
-        return ApiResponse.<List<ProductResponse>>builder()
-                .result(productService.getAllProducts())
+    public ApiResponse<Page<ProductResponse>> getAllProducts(
+            @ModelAttribute ProductFilterRequest filter,
+            @PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
+        return ApiResponse.<Page<ProductResponse>>builder()
+                .result(productService.getAllProducts(filter, pageable))
                 .build();
     }
 
