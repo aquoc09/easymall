@@ -44,9 +44,14 @@ public class UserBehaviorEntity {
     @Column(name = "context_data", columnDefinition = "jsonb")
     private String contextData;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "variant_id")
-    private ProductVariantEntity variant;
+    @Column(name = "variant_id")
+    private Long variantId;
+
+    @Column(name = "duration_seconds")
+    private Integer durationSeconds;
+
+    @Column(name = "source", length = 50)
+    private String source;
 
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)

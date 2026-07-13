@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface ProductRepository extends JpaRepository<ProductEntity, Long>,
@@ -23,6 +24,9 @@ public interface ProductRepository extends JpaRepository<ProductEntity, Long>,
     boolean existsByCategoryId(Long categoryId);
 
     // ── Stats Queries (Native — không qua Hibernate dirty checking) ────────
+    
+    // Fallback cho Recommendation Cold Start
+    List<ProductEntity> findTop10ByInStockTrueOrderBySoldCountDesc();
 
     @Modifying
     @Query(value = "UPDATE products SET view_count = view_count + 1 WHERE product_id = :productId", nativeQuery = true)
