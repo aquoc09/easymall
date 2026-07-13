@@ -32,4 +32,6 @@ public class ProductFilterRequest {
     private Boolean inStock;
 
     private Boolean inPopular;
+
+    private String variantSize;
 }

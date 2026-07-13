@@ -94,4 +94,15 @@ public class ProductSpecification {
             return cb.equal(root.get("targetGender"), targetGender);
         };
     }
+
+    public static Specification<ProductEntity> hasSize(String size) {
+        return (root, query, cb) -> {
+            if (size == null || size.trim().isEmpty()) {
+                return null;
+            }
+            jakarta.persistence.criteria.Join<ProductEntity, com.quocnva.easymall.entity.ProductVariantEntity> variants = root.join("variants");
+            String jsonToSearch = "{\"size\":\"" + size + "\"}";
+            return cb.isTrue(cb.function("JSON_CONTAINS", Boolean.class, variants.get("variantAttributes"), cb.literal(jsonToSearch)));
+        };
+    }
 }

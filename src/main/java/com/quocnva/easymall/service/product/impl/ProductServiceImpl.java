@@ -197,11 +197,8 @@ public class ProductServiceImpl implements ProductService {
                 CategoryEntity category = categoryOpt.get();
                 List<Long> categoryIds = new ArrayList<>();
                 categoryIds.add(category.getCategoryId());
-                // If it's a parent, fetch children
-                if (category.getParentId() == null) {
-                    List<CategoryEntity> children = categoryRepository.findByParentId(category.getCategoryId());
-                    categoryIds.addAll(children.stream().map(CategoryEntity::getCategoryId).toList());
-                }
+                // Fetch all descendants recursively (level 2, 3, etc.)
+                collectAllDescendantCategoryIds(category.getCategoryId(), categoryIds);
                 spec = spec.and(ProductSpecification.hasCategory(categoryIds));
             }
         }
@@ -224,6 +221,10 @@ public class ProductServiceImpl implements ProductService {
 
         if (filter.getTargetGender() != null) {
             spec = spec.and(ProductSpecification.hasTargetGender(filter.getTargetGender()));
+        }
+
+        if (filter.getVariantSize() != null && !filter.getVariantSize().isBlank()) {
+            spec = spec.and(ProductSpecification.hasSize(filter.getVariantSize()));
         }
 
         return spec;
@@ -452,6 +453,19 @@ public class ProductServiceImpl implements ProductService {
             // Xóa bản ghi trung chuyển — ảnh đã được liên kết chính thức
             if (imgReq.getImageUrl() != null) {
                 tempUploadRepository.deleteByUrl(imgReq.getImageUrl());
+            }
+        }
+    }
+
+    /**
+     * Lấy tất cả ID của danh mục con ở mọi level (đệ quy).
+     */
+    private void collectAllDescendantCategoryIds(Long parentId, List<Long> categoryIds) {
+        List<CategoryEntity> children = categoryRepository.findByParentId(parentId);
+        if (children != null && !children.isEmpty()) {
+            for (CategoryEntity child : children) {
+                categoryIds.add(child.getCategoryId());
+                collectAllDescendantCategoryIds(child.getCategoryId(), categoryIds);
             }
         }
     }
