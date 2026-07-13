@@ -330,13 +330,12 @@ public class ProductServiceImpl implements ProductService {
             if (rawSku != null && !rawSku.isBlank()) {
                 sku = rawSku.toUpperCase();
             } else {
-                String catCode = resolveCategoryCode(product.getCategoryId());
                 boolean isSimpleVariant = varReq.getVariantAttributes() == null
                         || varReq.getVariantAttributes().isEmpty();
                 if (isSimpleVariant) {
-                    sku = catCode + "-" + idForSku + "-DEFAULT";
+                    sku = "PRD-" + idForSku + "-DEFAULT";
                 } else {
-                    sku = SkuGenerator.generate(catCode, idForSku, varReq.getVariantAttributes());
+                    sku = SkuGenerator.generate(idForSku, varReq.getVariantAttributes());
                 }
             }
             requestSkus.add(sku);
@@ -457,21 +456,4 @@ public class ProductServiceImpl implements ProductService {
         }
     }
 
-    /**
-     * Resolve category code để sinh SKU.
-     * Fallback về "PRD" nếu không có category hoặc không tìm thấy.
-     */
-    private String resolveCategoryCode(Long categoryId) {
-        if (categoryId == null) return "PRD";
-        return categoryRepository.findById(categoryId)
-                .map(cat -> {
-                    // CategoryCode đã là slug (ví dụ: "ao-thun"), lấy 3 ký tự đầu viết hoa
-                    String code = cat.getCategoryCode();
-                    if (code != null && !code.isBlank()) {
-                        return code.replace("-", "").substring(0, Math.min(3, code.replace("-", "").length())).toUpperCase();
-                    }
-                    return "PRD";
-                })
-                .orElse("PRD");
-    }
 }
