@@ -17,7 +17,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
-import org.springframework.web.util.HtmlUtils;
 
 @Service
 @RequiredArgsConstructor
@@ -48,8 +47,8 @@ public class ContactMessageServiceImpl implements ContactMessageService {
                 .user(user)
                 .guestName(user != null ? user.getFullName() : request.getGuestName())
                 .guestEmail(user != null ? user.getEmail() : request.getGuestEmail())
-                .subject(HtmlUtils.htmlEscape(request.getSubject()))
-                .content(HtmlUtils.htmlEscape(request.getContent()))
+                .subject(request.getSubject())
+                .content(request.getContent())
                 .status("PENDING")
                 .build();
 
