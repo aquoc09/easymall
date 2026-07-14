@@ -1,4 +1,4 @@
-package com.quocnva.easymall.service.impl;
+package com.quocnva.easymall.service.recommend.impl;
 
 import com.quocnva.easymall.dtos.response.product.ProductResponse;
 import com.quocnva.easymall.entity.ProductEntity;
@@ -10,7 +10,7 @@ import com.quocnva.easymall.repository.ProductAssociationRepository;
 import com.quocnva.easymall.repository.ProductRepository;
 import com.quocnva.easymall.repository.ProductSimilarityRepository;
 import com.quocnva.easymall.repository.UserRecommendationRepository;
-import com.quocnva.easymall.service.RecommendationService;
+import com.quocnva.easymall.service.recommend.RecommendationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

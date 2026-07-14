@@ -1,4 +1,4 @@
-package com.quocnva.easymall.service;
+package com.quocnva.easymall.service.tracking;
 
 import com.quocnva.easymall.dtos.request.tracking.TrackingEventRequest;
 

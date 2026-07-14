@@ -1,4 +1,4 @@
-package com.quocnva.easymall.service;
+package com.quocnva.easymall.service.recommend;
 
 import com.quocnva.easymall.dtos.response.product.ProductResponse;
 

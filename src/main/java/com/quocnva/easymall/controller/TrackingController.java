@@ -1,7 +1,7 @@
 package com.quocnva.easymall.controller;
 
 import com.quocnva.easymall.dtos.request.tracking.TrackingEventRequest;
-import com.quocnva.easymall.service.TrackingService;
+import com.quocnva.easymall.service.tracking.TrackingService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;

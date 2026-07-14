@@ -2,7 +2,7 @@ package com.quocnva.easymall.controller;
 
 import com.quocnva.easymall.dtos.response.ApiResponse;
 import com.quocnva.easymall.dtos.response.product.ProductResponse;
-import com.quocnva.easymall.service.RecommendationService;
+import com.quocnva.easymall.service.recommend.RecommendationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

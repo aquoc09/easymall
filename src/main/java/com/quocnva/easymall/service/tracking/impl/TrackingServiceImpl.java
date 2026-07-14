@@ -1,4 +1,4 @@
-package com.quocnva.easymall.service.impl;
+package com.quocnva.easymall.service.tracking.impl;
 
 import com.quocnva.easymall.dtos.request.tracking.TrackingEventRequest;
 import com.quocnva.easymall.entity.UserBehaviorEntity;
@@ -6,7 +6,7 @@ import com.quocnva.easymall.repository.CategoryRepository;
 import com.quocnva.easymall.repository.ProductRepository;
 import com.quocnva.easymall.repository.UserBehaviorRepository;
 import com.quocnva.easymall.repository.UserRepository;
-import com.quocnva.easymall.service.TrackingService;
+import com.quocnva.easymall.service.tracking.TrackingService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Async;
