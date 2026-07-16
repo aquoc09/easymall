@@ -105,8 +105,13 @@ public class CategoryServiceImpl implements CategoryService {
         boolean wasActive = entity.getCategoryStatus() != null && entity.getCategoryStatus() == 1;
         boolean isNowHidden = request.getCategoryStatus() != null && request.getCategoryStatus() == 0;
 
+        String newCategoryCode = SlugUtils.toSlug(request.getCategoryName());
+        if (!newCategoryCode.equals(entity.getCategoryCode()) && categoryRepository.existsByCategoryCode(newCategoryCode)) {
+            throw new AppException(ErrorCode.CATEGORY_CODE_ALREADY_EXISTS);
+        }
+
         categoryMapper.updateEntityFromRequest(request, entity);
-        // We DO NOT update categoryCode to preserve SEO links as per business logic requirement.
+        entity.setCategoryCode(newCategoryCode);
 
         entity = categoryRepository.save(entity);
 
