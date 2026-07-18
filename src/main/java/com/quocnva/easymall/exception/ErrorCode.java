@@ -89,6 +89,7 @@ public enum ErrorCode {
     CART_ITEMS_NOT_FOUND(10007, "error.cart-items-not-found", HttpStatus.BAD_REQUEST),
     ADDRESS_NOT_FOUND(10008, "error.address-not-found", HttpStatus.NOT_FOUND),
     FRAUD_DETECTED(10009, "error.fraud-detected", HttpStatus.FORBIDDEN),
+    PAYMENT_URL_CREATION_FAILED(10010, "error.payment-url-creation-failed", HttpStatus.INTERNAL_SERVER_ERROR),
 
     // ── Review ────────────────────────────────────────────────────────────────
     REVIEW_NOT_FOUND(11001, "error.review-not-found", HttpStatus.NOT_FOUND),

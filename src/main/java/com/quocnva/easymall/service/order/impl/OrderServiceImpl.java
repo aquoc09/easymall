@@ -50,6 +50,7 @@ public class OrderServiceImpl implements OrderService {
     private final GhnOrderService ghnOrderService;
     private final com.quocnva.easymall.service.ghn.GhnShippingService ghnShippingService;
     private final ApplicationEventPublisher eventPublisher;
+    private final com.quocnva.easymall.service.payment.VnPayService vnPayService;
 
     // ── USER ──────────────────────────────────────────────────────────────
 
@@ -164,10 +165,12 @@ public class OrderServiceImpl implements OrderService {
             productVariantRepository.save(variant);
         }
 
-        // Step 9: Tạo Order
+        String trackingNumber = com.quocnva.easymall.config.VnPayProperties.getRandomNumber(8);
+
         OrderEntity order = OrderEntity.builder()
                 .user(user)
                 .address(address)
+                .trackingNumber(trackingNumber)
                 .paymentMethod(request.getPaymentMethod())
                 .shippingMethod(request.getShippingMethod())
                 .note(request.getNote())
@@ -223,9 +226,22 @@ public class OrderServiceImpl implements OrderService {
 
         if (request.getPaymentMethod() == PaymentMethod.COD) {
             finalStatus = OrderStatus.AWAITING_SHIPMENT;
+        } else if (request.getPaymentMethod() == PaymentMethod.VNPAY) {
+            finalStatus = OrderStatus.PENDING_PAYMENT;
+            String ip = com.quocnva.easymall.config.VnPayProperties.getIpAddress(httpRequest);
+            com.quocnva.easymall.dtos.request.payment.VnPayPaymentRequest paymentRequest = com.quocnva.easymall.dtos.request.payment.VnPayPaymentRequest.builder()
+                    .trackingNumber(order.getTrackingNumber())
+                    .ipAddress(ip)
+                    .amount(order.getFinalPaymentMoney().longValue())
+                    .language("vn")
+                    .build();
+            try {
+                paymentUrl = vnPayService.createPaymentUrl(paymentRequest);
+            } catch (Exception e) {
+                throw new AppException(ErrorCode.PAYMENT_URL_CREATION_FAILED);
+            }
         } else {
             finalStatus = OrderStatus.PENDING_PAYMENT;
-            // TODO: gọi VNPAY/MoMo API để sinh paymentUrl thực tế
         }
         
         savedOrder.setOrderStatus(finalStatus);
