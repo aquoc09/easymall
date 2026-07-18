@@ -29,15 +29,23 @@ public class OrderMapper {
                 .build();
     }
 
+    @org.springframework.beans.factory.annotation.Value("${storage.base-url}")
+    private String baseUrl;
+
     public OrderDetailResponse toDetailResponse(OrderDetailEntity detail) {
         Long variantId = detail.getVariant() != null ? detail.getVariant().getVariantId() : null;
+        String imageUrl = detail.getVariantImage();
+        if (imageUrl != null && !imageUrl.startsWith("http")) {
+            imageUrl = baseUrl + "/" + imageUrl;
+        }
+
         return OrderDetailResponse.builder()
                 .orderDetailId(detail.getOrderDetailId())
                 .variantId(variantId)
                 .skuCode(detail.getSkuCode())
                 .productName(detail.getProductName())
                 .variantAttributes(detail.getVariantAttributes())
-                .variantImage(detail.getVariantImage())
+                .variantImage(imageUrl)
                 .price(detail.getOrderDetailPrice())
                 .quantity(detail.getNumOfProduct())
                 .totalMoney(detail.getTotalMoney())

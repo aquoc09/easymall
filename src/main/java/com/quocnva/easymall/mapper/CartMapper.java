@@ -14,6 +14,7 @@ public interface CartMapper {
      * được set thủ công trong CartServiceImpl.
      */
     @Mapping(target = "variantId",         source = "variant.variantId")
+    @Mapping(target = "productId",         source = "variant.product.productId")
     @Mapping(target = "price",             source = "variant.price")
     @Mapping(target = "variantAttributes", source = "variant.variantAttributes")
     @Mapping(target = "variantImage",      source = "variant.variantImage")

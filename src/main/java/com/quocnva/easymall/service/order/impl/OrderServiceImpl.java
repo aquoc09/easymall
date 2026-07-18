@@ -46,6 +46,7 @@ public class OrderServiceImpl implements OrderService {
     private final DeviceSessionService deviceSessionService;
     private final OrderMapper orderMapper;
     private final GhnOrderService ghnOrderService;
+    private final com.quocnva.easymall.service.ghn.GhnShippingService ghnShippingService;
     private final com.quocnva.easymall.service.fraud.FraudDetectionService fraudDetectionService;
 
     // ── USER ──────────────────────────────────────────────────────────────
@@ -102,7 +103,7 @@ public class OrderServiceImpl implements OrderService {
         }
 
         // Step 6: Validate coupon (nếu có)
-        CouponEntity coupon = null;
+        List<CouponEntity> appliedCoupons = new ArrayList<>();
         BigDecimal totalProductMoney = cartItems.stream()
                 .map(item -> item.getVariant().getPrice().multiply(BigDecimal.valueOf(item.getQuantity())))
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
@@ -111,19 +112,40 @@ public class OrderServiceImpl implements OrderService {
         BigDecimal shippingDiscountAmount = BigDecimal.ZERO;
         BigDecimal paymentDiscountAmount  = BigDecimal.ZERO;
 
-        if (request.getCouponCode() != null && !request.getCouponCode().isBlank()) {
-            coupon = couponService.validateForCheckout(request.getCouponCode(), totalProductMoney, userEmail);
-            BigDecimal discount = couponServiceImpl.calculateDiscount(coupon, totalProductMoney);
-            switch (coupon.getCouponType()) {
-                case SHOP_VOUCHER    -> shopDiscountAmount     = discount;
-                case FREE_SHIPPING   -> shippingDiscountAmount = discount;
-                case PAYMENT_VOUCHER -> paymentDiscountAmount  = discount;
+        if (request.getCouponCodes() != null && !request.getCouponCodes().isEmpty()) {
+            for (String code : request.getCouponCodes()) {
+                CouponEntity coupon = couponService.validateForCheckout(code, totalProductMoney, userEmail);
+                BigDecimal discount = couponServiceImpl.calculateDiscount(coupon, totalProductMoney);
+                switch (coupon.getCouponType()) {
+                    case SHOP_VOUCHER    -> shopDiscountAmount     = shopDiscountAmount.add(discount);
+                    case FREE_SHIPPING   -> shippingDiscountAmount = shippingDiscountAmount.add(discount);
+                    case PAYMENT_VOUCHER -> paymentDiscountAmount  = paymentDiscountAmount.add(discount);
+                }
+                appliedCoupons.add(coupon);
             }
         }
 
         // Step 7: Tính toán tài chính
-        BigDecimal originalShippingFee = BigDecimal.ZERO;
-        // TODO: gọi GHN fee API để lấy phí ship thực tế
+        int totalWeightGram = cartItems.stream()
+                .mapToInt(item -> {
+                    BigDecimal weightKg = item.getVariant().getProduct().getWeightKg();
+                    if (weightKg == null) return 500;
+                    return weightKg.multiply(BigDecimal.valueOf(1000))
+                            .multiply(BigDecimal.valueOf(item.getQuantity()))
+                            .intValue();
+                })
+                .sum();
+
+        com.quocnva.easymall.dtos.request.ghn.ShippingFeeRequest feeRequest = new com.quocnva.easymall.dtos.request.ghn.ShippingFeeRequest();
+        feeRequest.setToDistrictId(address.getDistrictId());
+        feeRequest.setToWardCode(address.getWardCode());
+        feeRequest.setWeightGram(totalWeightGram);
+        
+        int serviceTypeId = (request.getShippingMethod() == com.quocnva.easymall.enums.ShippingMethod.EXPRESS) ? 1 : 2;
+        feeRequest.setServiceId(serviceTypeId);
+
+        com.quocnva.easymall.dtos.response.ghn.GhnShippingFeeResponse feeResponse = ghnShippingService.calculateFee(feeRequest);
+        BigDecimal originalShippingFee = BigDecimal.valueOf(feeResponse.getTotal());
 
         BigDecimal finalPaymentMoney = totalProductMoney
                 .subtract(shopDiscountAmount)
@@ -176,13 +198,15 @@ public class OrderServiceImpl implements OrderService {
         OrderEntity savedOrder = orderRepository.save(order);
 
         // Step 10: Commit CouponUsage
-        if (coupon != null) {
-            CouponUsageEntity usage = CouponUsageEntity.builder()
-                    .user(user)
-                    .coupon(coupon)
-                    .orderId(savedOrder.getOrderId())
-                    .build();
-            couponUsageRepository.save(usage);
+        if (!appliedCoupons.isEmpty()) {
+            for (CouponEntity appliedCoupon : appliedCoupons) {
+                CouponUsageEntity usage = CouponUsageEntity.builder()
+                        .user(user)
+                        .coupon(appliedCoupon)
+                        .orderId(savedOrder.getOrderId())
+                        .build();
+                couponUsageRepository.save(usage);
+            }
         }
 
         // Step 11: Xóa CartItems đã checkout

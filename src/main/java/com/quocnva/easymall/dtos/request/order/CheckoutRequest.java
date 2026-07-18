@@ -20,8 +20,8 @@ public class CheckoutRequest {
     @NotNull(message = "{validation.addressId.not-null}")
     private Long addressId;
 
-    /** Mã coupon — optional. Client không truyền deviceSessionId (server tự extract). */
-    private String couponCode;
+    /** Mã coupon — optional. Client có thể truyền nhiều mã cùng lúc (Vd: Shop + FreeShip) */
+    private List<String> couponCodes;
 
     @NotNull(message = "{validation.paymentMethod.not-null}")
     private PaymentMethod paymentMethod;

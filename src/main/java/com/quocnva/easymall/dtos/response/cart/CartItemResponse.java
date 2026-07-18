@@ -12,6 +12,7 @@ import java.math.BigDecimal;
 public class CartItemResponse {
 
     private Long cartItemId;
+    private Long productId;
     private Long variantId;
     private String productName;
     private java.util.Map<String, String> variantAttributes;
