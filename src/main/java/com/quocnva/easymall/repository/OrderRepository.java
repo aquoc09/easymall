@@ -7,7 +7,11 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import java.time.OffsetDateTime;
 import java.util.Optional;
+
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 public interface OrderRepository extends JpaRepository<OrderEntity, Long> {
 
@@ -23,9 +27,8 @@ public interface OrderRepository extends JpaRepository<OrderEntity, Long> {
     /** Admin filter theo trạng thái */
     Page<OrderEntity> findByOrderStatusOrderByOrderIdDesc(OrderStatus orderStatus, Pageable pageable);
 
-    // Fraud Detection — countByDeviceSessionAndOrderDateAfter đã bị xoá
-    // vì device_session_id không còn trong schema orders.
-    // TODO: implement fraud detection qua user_id hoặc IP address nếu cần.
+    @Query("SELECT COUNT(o) FROM OrderEntity o WHERE o.user.userId = :userId AND o.orderStatus = :status AND o.orderDate >= :since")
+    long countOrdersByUserAndStatusSince(@Param("userId") Long userId, @Param("status") OrderStatus status, @Param("since") OffsetDateTime since);
 
     /** GHN Webhook — tìm order bằng tracking_number (= GHN order_code) */
     Optional<OrderEntity> findByTrackingNumber(String trackingNumber);

@@ -11,6 +11,7 @@ public enum ErrorCode {
 
     // ── Generic ──────────────────────────────────────────────────────────
     UNCATEGORIZED_EXCEPTION(9999, "error.uncategorized", HttpStatus.INTERNAL_SERVER_ERROR),
+    INVALID_REQUEST(1000, "error.invalid-request", HttpStatus.BAD_REQUEST),
 
     // ── Auth ─────────────────────────────────────────────────────────────
     INVALID_CREDENTIALS(1001, "error.invalid-credentials", HttpStatus.UNAUTHORIZED),

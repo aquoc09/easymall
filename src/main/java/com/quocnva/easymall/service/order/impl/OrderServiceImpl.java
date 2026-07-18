@@ -19,8 +19,10 @@ import com.quocnva.easymall.service.coupon.impl.CouponServiceImpl;
 import com.quocnva.easymall.service.device.DeviceSessionService;
 import com.quocnva.easymall.service.ghn.GhnOrderService;
 import com.quocnva.easymall.service.order.OrderService;
+import com.quocnva.easymall.event.OrderCreatedEvent;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -47,7 +49,7 @@ public class OrderServiceImpl implements OrderService {
     private final OrderMapper orderMapper;
     private final GhnOrderService ghnOrderService;
     private final com.quocnva.easymall.service.ghn.GhnShippingService ghnShippingService;
-    private final com.quocnva.easymall.service.fraud.FraudDetectionService fraudDetectionService;
+    private final ApplicationEventPublisher eventPublisher;
 
     // ── USER ──────────────────────────────────────────────────────────────
 
@@ -63,8 +65,8 @@ public class OrderServiceImpl implements OrderService {
                 .findByAddressIdAndUser_UserId(request.getAddressId(), user.getUserId())
                 .orElseThrow(() -> new AppException(ErrorCode.ADDRESS_NOT_FOUND));
 
-        // Step 3: Extract & persist DeviceSession
-        DeviceSessionEntity deviceSession = deviceSessionService.getOrCreate(httpRequest, user);
+        // Step 3: Extract & persist DeviceSession (để RiskEngine xử lý sau)
+        deviceSessionService.getOrCreate(httpRequest, user);
 
         // Step 4: Load & validate CartItems thuộc user
         List<CartItemEntity> cartItems = cartItemRepository
@@ -212,25 +214,18 @@ public class OrderServiceImpl implements OrderService {
         // Step 11: Xóa CartItems đã checkout
         cartItemRepository.deleteAllByCartItemIdIn(request.getCartItemIds());
 
-        // Step 12: Fraud Detection
-        com.quocnva.easymall.enums.SystemDecision decision = fraudDetectionService.evaluateOrder(savedOrder, deviceSession, user);
-        if (decision == com.quocnva.easymall.enums.SystemDecision.DECLINE) {
-            throw new AppException(ErrorCode.FRAUD_DETECTED);
-        }
+        // Step 12: Phát sự kiện OrderCreatedEvent cho Risk Engine (Phase 8) chạy ngầm
+        eventPublisher.publishEvent(new OrderCreatedEvent(this, savedOrder.getOrderId(), user.getUserId()));
 
         // Step 13: Payment routing
         OrderStatus finalStatus;
         String paymentUrl = null;
 
-        if (decision == com.quocnva.easymall.enums.SystemDecision.REVIEW) {
-            finalStatus = OrderStatus.PENDING_REVIEW;
+        if (request.getPaymentMethod() == PaymentMethod.COD) {
+            finalStatus = OrderStatus.AWAITING_SHIPMENT;
         } else {
-            if (request.getPaymentMethod() == PaymentMethod.COD) {
-                finalStatus = OrderStatus.AWAITING_SHIPMENT;
-            } else {
-                finalStatus = OrderStatus.PENDING_PAYMENT;
-                // TODO: gọi VNPAY/MoMo API để sinh paymentUrl thực tế
-            }
+            finalStatus = OrderStatus.PENDING_PAYMENT;
+            // TODO: gọi VNPAY/MoMo API để sinh paymentUrl thực tế
         }
         
         savedOrder.setOrderStatus(finalStatus);

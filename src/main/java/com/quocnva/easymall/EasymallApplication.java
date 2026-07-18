@@ -6,8 +6,11 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 
 import java.util.TimeZone;
 
+import org.springframework.scheduling.annotation.EnableAsync;
+
 @SpringBootApplication
 @EnableScheduling
+@EnableAsync
 public class EasymallApplication {
 
 	public static void main(String[] args) {
