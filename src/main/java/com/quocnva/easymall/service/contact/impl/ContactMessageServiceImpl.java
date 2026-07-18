@@ -1,4 +1,4 @@
-package com.quocnva.easymall.service.contact;
+package com.quocnva.easymall.service.contact.impl;
 
 import com.quocnva.easymall.dtos.request.contact.ContactMessageRequest;
 import com.quocnva.easymall.dtos.request.contact.ContactMessageStatusRequest;
@@ -10,6 +10,7 @@ import com.quocnva.easymall.exception.ErrorCode;
 import com.quocnva.easymall.mapper.ContactMessageMapper;
 import com.quocnva.easymall.repository.ContactMessageRepository;
 import com.quocnva.easymall.repository.UserRepository;
+import com.quocnva.easymall.service.contact.ContactMessageService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
