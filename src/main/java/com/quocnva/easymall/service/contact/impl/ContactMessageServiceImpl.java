@@ -40,7 +40,7 @@ public class ContactMessageServiceImpl implements ContactMessageService {
             if (!StringUtils.hasText(request.getGuestName()) || !StringUtils.hasText(request.getGuestEmail())) {
                 // Here we can throw a generic bad request or we can reuse some error. 
                 // Using AppException with a generic uncategorized but we can just throw IllegalArgumentException handled by GlobalExceptionHandler
-                throw new IllegalArgumentException("Guest name and email are required when not logged in");
+                throw new AppException(ErrorCode.CONTACT_GUEST_INFO_REQUIRED);
             }
         }
 
@@ -92,3 +92,4 @@ public class ContactMessageServiceImpl implements ContactMessageService {
         return contactMessageMapper.toResponse(entity);
     }
 }
+

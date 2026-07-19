@@ -1,5 +1,7 @@
 package com.quocnva.easymall.controller;
 
+import com.quocnva.easymall.util.Translator;
+
 import com.quocnva.easymall.dtos.response.ApiResponse;
 import com.quocnva.easymall.dtos.response.review.WishlistResponse;
 import com.quocnva.easymall.service.review.WishlistService;
@@ -50,7 +52,7 @@ public class WishlistController {
             Authentication authentication) {
         wishlistService.removeFromWishlist(productId, authentication.getName());
         return ApiResponse.<Void>builder()
-                .message("Đã xóa khỏi danh sách yêu thích")
+                .message(Translator.toLocale("success.wishlist.removed"))
                 .build();
     }
 }

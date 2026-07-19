@@ -1,5 +1,8 @@
 package com.quocnva.easymall.util;
 
+import com.quocnva.easymall.exception.AppException;
+import com.quocnva.easymall.exception.ErrorCode;
+
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.experimental.UtilityClass;
 
@@ -52,7 +55,9 @@ public class DeviceSessionUtil {
             return hex.toString();
         } catch (NoSuchAlgorithmException e) {
             // SHA-256 luôn tồn tại trong JDK — không bao giờ xảy ra
-            throw new IllegalStateException("SHA-256 algorithm not available", e);
+            throw new AppException(ErrorCode.ALGORITHM_NOT_AVAILABLE);
         }
     }
 }
+
+

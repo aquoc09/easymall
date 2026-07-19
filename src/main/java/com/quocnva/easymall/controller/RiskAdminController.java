@@ -1,5 +1,7 @@
 package com.quocnva.easymall.controller;
 
+import com.quocnva.easymall.util.Translator;
+
 import com.quocnva.easymall.dtos.request.risk.RiskAlertResolveRequest;
 import com.quocnva.easymall.dtos.request.risk.RiskRuleUpdateRequest;
 import com.quocnva.easymall.dtos.response.ApiResponse;
@@ -60,7 +62,7 @@ public class RiskAdminController {
             @Valid @RequestBody RiskAlertResolveRequest request) {
         riskService.resolveAlert(alertId, request);
         return ApiResponse.<Void>builder()
-                .message("Alert resolved successfully")
+                .message(Translator.toLocale("success.risk.alert-resolved"))
                 .build();
     }
 }

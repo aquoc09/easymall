@@ -1,5 +1,7 @@
 package com.quocnva.easymall.controller;
 
+import com.quocnva.easymall.util.Translator;
+
 import com.quocnva.easymall.dtos.request.review.CreateReviewRequest;
 import com.quocnva.easymall.dtos.request.review.UpdateReviewStatusRequest;
 import com.quocnva.easymall.dtos.response.ApiResponse;
@@ -31,7 +33,7 @@ public class ReviewController {
             Authentication authentication) {
         return ApiResponse.<ReviewResponse>builder()
                 .result(reviewService.createReview(request, authentication.getName()))
-                .message("Đã gửi đánh giá, đang chờ duyệt")
+                .message(Translator.toLocale("success.review.created"))
                 .build();
     }
 
@@ -52,7 +54,7 @@ public class ReviewController {
             Authentication authentication) {
         reviewService.deleteReview(id, authentication.getName());
         return ApiResponse.<Void>builder()
-                .message("Đã xóa đánh giá")
+                .message(Translator.toLocale("success.review.deleted"))
                 .build();
     }
 
@@ -83,7 +85,7 @@ public class ReviewController {
             @Valid @RequestBody UpdateReviewStatusRequest request) {
         return ApiResponse.<ReviewResponse>builder()
                 .result(reviewService.updateReviewStatus(id, request))
-                .message("Cập nhật trạng thái thành công")
+                .message(Translator.toLocale("success.review.status-updated"))
                 .build();
     }
 }

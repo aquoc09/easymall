@@ -1,5 +1,7 @@
 package com.quocnva.easymall.controller;
 
+import com.quocnva.easymall.util.Translator;
+
 import com.quocnva.easymall.dtos.request.order.CheckoutRequest;
 import com.quocnva.easymall.dtos.request.order.OrderCancelRequest;
 import com.quocnva.easymall.dtos.request.order.OrderStatusUpdateRequest;
@@ -39,7 +41,7 @@ public class OrderController {
             HttpServletRequest httpRequest) {
         return ApiResponse.<CheckoutResponse>builder()
                 .result(orderService.checkout(request, authentication.getName(), httpRequest))
-                .message("Order placed successfully")
+                .message(Translator.toLocale("success.order.placed"))
                 .build();
     }
 
@@ -71,7 +73,7 @@ public class OrderController {
             Authentication authentication) {
         orderService.cancelMyOrder(orderId, request, authentication.getName());
         return ApiResponse.<Void>builder()
-                .message("Order cancelled successfully")
+                .message(Translator.toLocale("success.order.cancelled"))
                 .build();
     }
 
@@ -101,7 +103,7 @@ public class OrderController {
             @Valid @RequestBody OrderStatusUpdateRequest request) {
         orderService.updateOrderStatus(orderId, request);
         return ApiResponse.<Void>builder()
-                .message("Order status updated successfully")
+                .message(Translator.toLocale("success.order.status-updated"))
                 .build();
     }
 
@@ -115,7 +117,7 @@ public class OrderController {
     public ApiResponse<Void> ghnWebhook(@RequestBody Object payload) {
         // TODO: verify GHN signature, parse payload, update deliveryStatus + orderStatus
         return ApiResponse.<Void>builder()
-                .message("GHN webhook received (not yet implemented)")
+                .message(Translator.toLocale("success.order.ghn-webhook"))
                 .build();
     }
 }

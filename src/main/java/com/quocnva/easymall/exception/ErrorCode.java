@@ -117,6 +117,17 @@ public enum ErrorCode {
     EMPTY_FILE(15004, "error.upload.empty-file", HttpStatus.BAD_REQUEST),
     // ── Slider ──────────────────────────────────────────────────────────────────────────────
     SLIDER_NOT_FOUND(16001, "error.slider-not-found", HttpStatus.NOT_FOUND),
+
+    // ── System / Internal ─────────────────────────────────────────────────────────────
+    REDIS_SERIALIZATION_FAILED(90001, "error.redis-serialization-failed", HttpStatus.INTERNAL_SERVER_ERROR),
+    ALGORITHM_NOT_AVAILABLE(90002, "error.algorithm-not-available", HttpStatus.INTERNAL_SERVER_ERROR),
+    JWT_GENERATION_FAILED(90003, "error.jwt-generation-failed", HttpStatus.INTERNAL_SERVER_ERROR),
+    JWT_INVALID_SIGNATURE(90004, "error.jwt-invalid-signature", HttpStatus.UNAUTHORIZED),
+    JWT_PARSING_FAILED(90005, "error.jwt-parsing-failed", HttpStatus.UNAUTHORIZED),
+    JWT_MISSING_JTI(90006, "error.jwt-missing-jti", HttpStatus.UNAUTHORIZED),
+
+    // ── Contact ──────────────────────────────────────────────────────────────
+    CONTACT_GUEST_INFO_REQUIRED(17001, "error.contact-guest-info-required", HttpStatus.BAD_REQUEST),
     ;
 
 

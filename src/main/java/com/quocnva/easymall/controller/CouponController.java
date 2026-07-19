@@ -1,5 +1,7 @@
 package com.quocnva.easymall.controller;
 
+import com.quocnva.easymall.util.Translator;
+
 import com.quocnva.easymall.dtos.request.coupon.CouponApplyRequest;
 import com.quocnva.easymall.dtos.request.coupon.CouponCreateRequest;
 import com.quocnva.easymall.dtos.request.coupon.CouponUpdateRequest;
@@ -31,7 +33,7 @@ public class CouponController {
             @Valid @RequestBody CouponCreateRequest request) {
         return ApiResponse.<CouponResponse>builder()
                 .result(couponService.createCoupon(request))
-                .message("Coupon created successfully")
+                .message(Translator.toLocale("success.coupon.created"))
                 .build();
     }
 
@@ -42,7 +44,7 @@ public class CouponController {
             @Valid @RequestBody CouponUpdateRequest request) {
         return ApiResponse.<CouponResponse>builder()
                 .result(couponService.updateCoupon(id, request))
-                .message("Coupon updated successfully")
+                .message(Translator.toLocale("success.coupon.updated"))
                 .build();
     }
 
@@ -51,7 +53,7 @@ public class CouponController {
     public ApiResponse<Void> deactivateCoupon(@PathVariable Long id) {
         couponService.deactivateCoupon(id);
         return ApiResponse.<Void>builder()
-                .message("Coupon deactivated successfully")
+                .message(Translator.toLocale("success.coupon.deactivated"))
                 .build();
     }
 
@@ -88,7 +90,7 @@ public class CouponController {
     public ApiResponse<java.util.List<CouponResponse>> getAvailableCoupons() {
         return ApiResponse.<java.util.List<CouponResponse>>builder()
                 .result(couponService.getAvailableCoupons())
-                .message("Available coupons fetched successfully")
+                .message(Translator.toLocale("success.coupon.fetched"))
                 .build();
     }
 }

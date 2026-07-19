@@ -64,7 +64,7 @@ public class RegistrationServiceImpl implements RegistrationService {
                     OtpConstants.OTP_TTL_SECONDS, TimeUnit.SECONDS
             );
         } catch (JsonProcessingException e) {
-            throw new RuntimeException("Failed to serialize pending user data", e);
+            throw new AppException(ErrorCode.REDIS_SERIALIZATION_FAILED);
         }
 
         redisTemplate.opsForValue().set(
@@ -105,7 +105,7 @@ public class RegistrationServiceImpl implements RegistrationService {
         try {
             data = objectMapper.readValue(pendingJson, Map.class);
         } catch (JsonProcessingException e) {
-            throw new RuntimeException("Failed to deserialize pending user data", e);
+            throw new AppException(ErrorCode.REDIS_SERIALIZATION_FAILED);
         }
 
         RoleEntity defaultRole = roleRepository.findByRoleName("ROLE_USER")
@@ -158,3 +158,4 @@ public class RegistrationServiceImpl implements RegistrationService {
         }
     }
 }
+

@@ -1,5 +1,8 @@
 package com.quocnva.easymall.util;
 
+import com.quocnva.easymall.exception.AppException;
+import com.quocnva.easymall.exception.ErrorCode;
+
 import com.nimbusds.jose.*;
 import com.nimbusds.jose.crypto.*;
 import com.nimbusds.jwt.*;
@@ -51,7 +54,7 @@ public class JwtUtil {
 
             return sign(claims);
         } catch (JOSEException e) {
-            throw new RuntimeException("Failed to generate access token", e);
+            throw new AppException(ErrorCode.JWT_GENERATION_FAILED);
         }
     }
 
@@ -71,7 +74,7 @@ public class JwtUtil {
 
             return sign(claims);
         } catch (JOSEException e) {
-            throw new RuntimeException("Failed to generate refresh token", e);
+            throw new AppException(ErrorCode.JWT_GENERATION_FAILED);
         }
     }
 
@@ -86,11 +89,11 @@ public class JwtUtil {
             SignedJWT signedJWT = SignedJWT.parse(token);
             MACVerifier verifier = new MACVerifier(jwtConfig.getSignerKey().getBytes());
             if (!signedJWT.verify(verifier)) {
-                throw new RuntimeException("Invalid JWT signature");
+                throw new AppException(ErrorCode.JWT_INVALID_SIGNATURE);
             }
             return signedJWT;
         } catch (Exception e) {
-            throw new RuntimeException("Failed to parse token: " + e.getMessage(), e);
+            throw new AppException(ErrorCode.JWT_PARSING_FAILED);
         }
     }
 
@@ -99,7 +102,7 @@ public class JwtUtil {
         try {
             return parseToken(token).getJWTClaimsSet().getJWTID();
         } catch (Exception e) {
-            throw new RuntimeException("Failed to extract JTI", e);
+            throw new AppException(ErrorCode.JWT_MISSING_JTI);
         }
     }
 
@@ -130,3 +133,5 @@ public class JwtUtil {
         return (user.getRole() != null) ? user.getRole().getRoleName() : "";
     }
 }
+
+
