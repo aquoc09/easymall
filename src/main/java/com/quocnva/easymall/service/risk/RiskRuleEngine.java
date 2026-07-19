@@ -5,6 +5,7 @@ import com.quocnva.easymall.entity.RiskAlertEntity;
 import com.quocnva.easymall.entity.RiskRuleConfigEntity;
 import com.quocnva.easymall.entity.UserEntity;
 import com.quocnva.easymall.enums.OrderStatus;
+import com.quocnva.easymall.enums.RiskAlertStatus;
 import com.quocnva.easymall.event.OrderCreatedEvent;
 import com.quocnva.easymall.repository.DeviceSessionRepository;
 import com.quocnva.easymall.repository.OrderRepository;
@@ -93,7 +94,7 @@ public class RiskRuleEngine {
                         .order(order)
                         .ruleConfig(rule)
                         .description(description)
-                        .status("PENDING")
+                        .status(RiskAlertStatus.PENDING)
                         .build();
                 riskAlertRepository.save(alert);
                 log.warn("Risk Alert Generated: Order ID {} violated rule {}", order.getOrderId(), rule.getRuleCode());

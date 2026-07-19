@@ -8,14 +8,6 @@ CREATE TABLE IF NOT EXISTS fraud_rule_configs (
     updated_by BIGINT REFERENCES users (user_id)
 );
 
-INSERT INTO
-    fraud_rule_configs (
-        config_id,
-        review_threshold,
-        decline_threshold
-    )
-VALUES (1, 40.00, 75.00);
-
 -- 2. Cập nhật bảng fraud_records_and_labels để nhận SHAP factors
 ALTER TABLE fraud_records_and_labels
 ADD COLUMN top_risk_factors JSONB NULL;

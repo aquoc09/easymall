@@ -8,6 +8,9 @@ import com.quocnva.easymall.dtos.response.coupon.CouponResponse;
 import com.quocnva.easymall.entity.CouponEntity;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import java.math.BigDecimal;
+import com.quocnva.easymall.enums.PaymentMethod;
+import java.util.List;
 
 public interface CouponService {
 
@@ -34,11 +37,12 @@ public interface CouponService {
      * @param userEmail   email user đang checkout
      * @return CouponEntity hợp lệ
      */
-    CouponEntity validateForCheckout(String couponCode, java.math.BigDecimal orderAmount, String userEmail);
+    CouponEntity validateForCheckout(String couponCode, BigDecimal orderAmount, String userEmail,
+            PaymentMethod paymentMethod);
 
     /**
      * TODO: Gợi ý coupon tốt nhất cho đơn hàng.
      * Stub — chưa implement, trả về empty list.
      */
-    java.util.List<CouponApplyResponse> suggestCoupons(java.math.BigDecimal orderAmount, String userEmail);
+    List<CouponApplyResponse> suggestCoupons(BigDecimal orderAmount, String userEmail);
 }

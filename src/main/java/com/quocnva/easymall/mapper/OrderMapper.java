@@ -68,6 +68,7 @@ public class OrderMapper {
                 .note(order.getNote())
                 .totalProductMoney(order.getTotalProductMoney())
                 .originalShippingFee(order.getOriginalShippingFee())
+                .shopDiscountAmount(order.getShopDiscountAmount())
                 .shippingDiscountAmount(order.getShippingDiscountAmount())
                 .paymentDiscountAmount(order.getPaymentDiscountAmount())
                 .finalPaymentMoney(order.getFinalPaymentMoney())

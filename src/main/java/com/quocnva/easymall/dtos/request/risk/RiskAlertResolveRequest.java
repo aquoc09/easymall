@@ -1,10 +1,11 @@
 package com.quocnva.easymall.dtos.request.risk;
 
-import jakarta.validation.constraints.NotBlank;
+import com.quocnva.easymall.enums.RiskAlertStatus;
+import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
 @Data
 public class RiskAlertResolveRequest {
-    @NotBlank(message = "Status is required (RESOLVED or FALSE_POSITIVE)")
-    private String status;
+    @NotNull(message = "Status is required")
+    private RiskAlertStatus status;
 }

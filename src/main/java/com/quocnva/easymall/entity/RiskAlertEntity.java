@@ -3,6 +3,7 @@ package com.quocnva.easymall.entity;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
+import com.quocnva.easymall.enums.RiskAlertStatus;
 
 import java.time.OffsetDateTime;
 
@@ -35,9 +36,10 @@ public class RiskAlertEntity {
     @Column(name = "description", columnDefinition = "TEXT", nullable = false)
     private String description;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "status", length = 20)
     @Builder.Default
-    private String status = "PENDING";
+    private RiskAlertStatus status = RiskAlertStatus.PENDING;
 
     @Column(name = "created_at", nullable = false, updatable = false)
     @CreationTimestamp

@@ -66,16 +66,26 @@ public class CouponServiceImpl implements CouponService {
         CouponEntity entity = getCouponEntityById(couponId);
 
         // code là immutable — không cho sửa
-        if (request.getDescription() != null)       entity.setDescription(request.getDescription());
-        if (request.getDiscountValue() != null)     entity.setDiscountValue(request.getDiscountValue());
-        if (request.getMaxDiscountAmount() != null) entity.setMaxDiscountAmount(request.getMaxDiscountAmount());
-        if (request.getMinOrderAmount() != null)    entity.setMinOrderAmount(request.getMinOrderAmount());
-        if (request.getMaxUsage() != null)           entity.setMaxUsage(request.getMaxUsage());
-        if (request.getUserUsageLimit() != null)    entity.setUserUsageLimit(request.getUserUsageLimit());
-        if (request.getStartDate() != null)          entity.setStartDate(request.getStartDate());
-        if (request.getEndDate() != null)            entity.setEndDate(request.getEndDate());
-        if (request.getIsActive() != null)           entity.setIsActive(request.getIsActive());
-        if (request.getApplicableConditions() != null) entity.setApplicableConditions(request.getApplicableConditions());
+        if (request.getDescription() != null)
+            entity.setDescription(request.getDescription());
+        if (request.getDiscountValue() != null)
+            entity.setDiscountValue(request.getDiscountValue());
+        if (request.getMaxDiscountAmount() != null)
+            entity.setMaxDiscountAmount(request.getMaxDiscountAmount());
+        if (request.getMinOrderAmount() != null)
+            entity.setMinOrderAmount(request.getMinOrderAmount());
+        if (request.getMaxUsage() != null)
+            entity.setMaxUsage(request.getMaxUsage());
+        if (request.getUserUsageLimit() != null)
+            entity.setUserUsageLimit(request.getUserUsageLimit());
+        if (request.getStartDate() != null)
+            entity.setStartDate(request.getStartDate());
+        if (request.getEndDate() != null)
+            entity.setEndDate(request.getEndDate());
+        if (request.getIsActive() != null)
+            entity.setIsActive(request.getIsActive());
+        if (request.getApplicableConditions() != null)
+            entity.setApplicableConditions(request.getApplicableConditions());
 
         return couponMapper.toResponse(couponRepository.save(entity));
     }
@@ -108,7 +118,7 @@ public class CouponServiceImpl implements CouponService {
     public CouponApplyResponse previewApply(CouponApplyRequest request, String userEmail) {
         UserEntity user = getUserByEmail(userEmail);
         CouponEntity coupon = validateCoupon(request.getCouponCode(), request.getOrderAmount(), user);
-        BigDecimal discount = calculateDiscount(coupon, request.getOrderAmount());
+        BigDecimal discount = calculateDiscount(coupon, request.getOrderAmount(), request.getShippingFee());
         return couponMapper.toApplyResponse(coupon, request.getOrderAmount(), discount);
     }
 
@@ -125,9 +135,28 @@ public class CouponServiceImpl implements CouponService {
 
     @Override
     @Transactional(readOnly = true)
-    public CouponEntity validateForCheckout(String couponCode, BigDecimal orderAmount, String userEmail) {
+    public CouponEntity validateForCheckout(String couponCode, BigDecimal orderAmount, String userEmail, com.quocnva.easymall.enums.PaymentMethod paymentMethod) {
         UserEntity user = getUserByEmail(userEmail);
-        return validateCoupon(couponCode, orderAmount, user);
+        CouponEntity coupon = validateCoupon(couponCode, orderAmount, user);
+        
+        if (coupon.getCouponType() == com.quocnva.easymall.enums.CouponType.PAYMENT_VOUCHER && paymentMethod != null) {
+            String conditions = coupon.getApplicableConditions();
+            if (conditions != null && !conditions.trim().isEmpty()) {
+                try {
+                    com.fasterxml.jackson.databind.JsonNode root = new com.fasterxml.jackson.databind.ObjectMapper().readTree(conditions);
+                    if (root.has("payment_method")) {
+                        String requiredMethod = root.get("payment_method").asText();
+                        if (!requiredMethod.equalsIgnoreCase(paymentMethod.name())) {
+                            throw new AppException(ErrorCode.INVALID_PAYMENT_METHOD_FOR_COUPON);
+                        }
+                    }
+                } catch (Exception e) {
+                    // Ignore parse errors or handle them
+                }
+            }
+        }
+        
+        return coupon;
     }
 
     // ── TODO STUB ─────────────────────────────────────────────────────────
@@ -198,16 +227,18 @@ public class CouponServiceImpl implements CouponService {
      * - PERCENTAGE: min(amount * percent/100, maxDiscountAmount)
      * - FIXED_AMOUNT: discountValue (không vượt quá orderAmount)
      */
-    public BigDecimal calculateDiscount(CouponEntity coupon, BigDecimal orderAmount) {
+    public BigDecimal calculateDiscount(CouponEntity coupon, BigDecimal orderAmount, BigDecimal shippingFee) {
+        BigDecimal baseAmount = (coupon.getCouponType() == com.quocnva.easymall.enums.CouponType.FREE_SHIPPING) ? shippingFee : orderAmount;
+
         if (coupon.getDiscountType() == DiscountType.PERCENTAGE) {
-            BigDecimal raw = orderAmount
+            BigDecimal raw = baseAmount
                     .multiply(coupon.getDiscountValue())
                     .divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
             return coupon.getMaxDiscountAmount() != null
                     ? raw.min(coupon.getMaxDiscountAmount())
                     : raw;
         }
-        // FIXED_AMOUNT — không giảm quá tổng tiền hàng
-        return coupon.getDiscountValue().min(orderAmount);
+        // FIXED_AMOUNT — không giảm quá baseAmount
+        return coupon.getDiscountValue().min(baseAmount);
     }
 }

@@ -18,4 +18,8 @@ public class CouponApplyRequest {
     @NotNull(message = "{validation.orderAmount.not-null}")
     @DecimalMin(value = "0", message = "{validation.orderAmount.min}")
     private BigDecimal orderAmount;
+
+    // Optional: for accurately previewing FREE_SHIPPING coupons
+    @DecimalMin(value = "0", message = "{validation.shippingFee.min}")
+    private BigDecimal shippingFee = BigDecimal.ZERO;
 }

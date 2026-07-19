@@ -8,6 +8,7 @@ import com.quocnva.easymall.entity.OrderEntity;
 import com.quocnva.easymall.entity.RiskAlertEntity;
 import com.quocnva.easymall.entity.RiskRuleConfigEntity;
 import com.quocnva.easymall.enums.OrderStatus;
+import com.quocnva.easymall.enums.RiskAlertStatus;
 import com.quocnva.easymall.exception.AppException;
 import com.quocnva.easymall.exception.ErrorCode;
 import com.quocnva.easymall.repository.OrderRepository;
@@ -70,17 +71,14 @@ public class RiskServiceImpl implements RiskService {
         RiskAlertEntity alert = riskAlertRepository.findById(alertId)
                 .orElseThrow(() -> new AppException(ErrorCode.UNCATEGORIZED_EXCEPTION));
 
-        String status = request.getStatus();
-        if (!"RESOLVED".equals(status) && !"FALSE_POSITIVE".equals(status)) {
-            throw new AppException(ErrorCode.INVALID_REQUEST);
-        }
+        RiskAlertStatus status = request.getStatus();
 
         alert.setStatus(status);
         riskAlertRepository.save(alert);
 
         if (alert.getOrder() != null) {
             OrderEntity order = alert.getOrder();
-            if ("RESOLVED".equals(status)) {
+            if (status == RiskAlertStatus.RESOLVED) {
                 // If it is actual fraud, cancel order
                 if (order.getOrderStatus() != OrderStatus.CANCELLED) {
                     order.setOrderStatus(OrderStatus.CANCELLED);

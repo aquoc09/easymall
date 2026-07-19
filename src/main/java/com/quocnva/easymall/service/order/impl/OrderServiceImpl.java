@@ -105,34 +105,16 @@ public class OrderServiceImpl implements OrderService {
             }
         }
 
-        // Step 6: Validate coupon (nếu có)
-        List<CouponEntity> appliedCoupons = new ArrayList<>();
         BigDecimal totalProductMoney = cartItems.stream()
                 .map(item -> item.getVariant().getPrice().multiply(BigDecimal.valueOf(item.getQuantity())))
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
-        BigDecimal shopDiscountAmount     = BigDecimal.ZERO;
-        BigDecimal shippingDiscountAmount = BigDecimal.ZERO;
-        BigDecimal paymentDiscountAmount  = BigDecimal.ZERO;
-
-        if (request.getCouponCodes() != null && !request.getCouponCodes().isEmpty()) {
-            for (String code : request.getCouponCodes()) {
-                CouponEntity coupon = couponService.validateForCheckout(code, totalProductMoney, userEmail);
-                BigDecimal discount = couponServiceImpl.calculateDiscount(coupon, totalProductMoney);
-                switch (coupon.getCouponType()) {
-                    case SHOP_VOUCHER    -> shopDiscountAmount     = shopDiscountAmount.add(discount);
-                    case FREE_SHIPPING   -> shippingDiscountAmount = shippingDiscountAmount.add(discount);
-                    case PAYMENT_VOUCHER -> paymentDiscountAmount  = paymentDiscountAmount.add(discount);
-                }
-                appliedCoupons.add(coupon);
-            }
-        }
-
-        // Step 7: Tính toán tài chính
+        // Step 6: Tính toán tài chính - GHN Shipping Fee
         int totalWeightGram = cartItems.stream()
                 .mapToInt(item -> {
                     BigDecimal weightKg = item.getVariant().getProduct().getWeightKg();
-                    if (weightKg == null) return 500;
+                    if (weightKg == null)
+                        return 500;
                     return weightKg.multiply(BigDecimal.valueOf(1000))
                             .multiply(BigDecimal.valueOf(item.getQuantity()))
                             .intValue();
@@ -143,12 +125,31 @@ public class OrderServiceImpl implements OrderService {
         feeRequest.setToDistrictId(address.getDistrictId());
         feeRequest.setToWardCode(address.getWardCode());
         feeRequest.setWeightGram(totalWeightGram);
-        
-        int serviceTypeId = (request.getShippingMethod() == com.quocnva.easymall.enums.ShippingMethod.EXPRESS) ? 1 : 2;
-        feeRequest.setServiceId(serviceTypeId);
+
+        // Mặc định sử dụng phương thức vận chuyển Standard (2) do frontend không cho phép chọn
+        feeRequest.setServiceId(2);
 
         com.quocnva.easymall.dtos.response.ghn.GhnShippingFeeResponse feeResponse = ghnShippingService.calculateFee(feeRequest);
         BigDecimal originalShippingFee = BigDecimal.valueOf(feeResponse.getTotal());
+
+        // Step 7: Validate coupon (nếu có)
+        List<CouponEntity> appliedCoupons = new ArrayList<>();
+        BigDecimal shopDiscountAmount = BigDecimal.ZERO;
+        BigDecimal shippingDiscountAmount = BigDecimal.ZERO;
+        BigDecimal paymentDiscountAmount = BigDecimal.ZERO;
+
+        if (request.getCouponCodes() != null && !request.getCouponCodes().isEmpty()) {
+            for (String code : request.getCouponCodes()) {
+                CouponEntity coupon = couponService.validateForCheckout(code, totalProductMoney, userEmail, request.getPaymentMethod());
+                BigDecimal discount = couponServiceImpl.calculateDiscount(coupon, totalProductMoney, originalShippingFee);
+                switch (coupon.getCouponType()) {
+                    case SHOP_VOUCHER -> shopDiscountAmount = shopDiscountAmount.add(discount);
+                    case FREE_SHIPPING -> shippingDiscountAmount = shippingDiscountAmount.add(discount);
+                    case PAYMENT_VOUCHER -> paymentDiscountAmount = paymentDiscountAmount.add(discount);
+                }
+                appliedCoupons.add(coupon);
+            }
+        }
 
         BigDecimal finalPaymentMoney = totalProductMoney
                 .subtract(shopDiscountAmount)
@@ -156,7 +157,8 @@ public class OrderServiceImpl implements OrderService {
                 .subtract(shippingDiscountAmount)
                 .subtract(paymentDiscountAmount);
 
-        // Step 8: Lock inventory (Pessimistic Write đã được JPA đảm bảo trong @Transactional)
+        // Step 8: Lock inventory (Pessimistic Write đã được JPA đảm bảo trong
+        // @Transactional)
         for (CartItemEntity item : cartItems) {
             ProductVariantEntity variant = productVariantRepository
                     .findById(item.getVariant().getVariantId())
@@ -176,6 +178,7 @@ public class OrderServiceImpl implements OrderService {
                 .note(request.getNote())
                 .totalProductMoney(totalProductMoney)
                 .originalShippingFee(originalShippingFee)
+                .shopDiscountAmount(shopDiscountAmount)
                 .shippingDiscountAmount(shippingDiscountAmount)
                 .paymentDiscountAmount(paymentDiscountAmount)
                 .finalPaymentMoney(finalPaymentMoney)
@@ -229,7 +232,8 @@ public class OrderServiceImpl implements OrderService {
         } else if (request.getPaymentMethod() == PaymentMethod.VNPAY) {
             finalStatus = OrderStatus.PENDING_PAYMENT;
             String ip = com.quocnva.easymall.config.VnPayProperties.getIpAddress(httpRequest);
-            com.quocnva.easymall.dtos.request.payment.VnPayPaymentRequest paymentRequest = com.quocnva.easymall.dtos.request.payment.VnPayPaymentRequest.builder()
+            com.quocnva.easymall.dtos.request.payment.VnPayPaymentRequest paymentRequest = com.quocnva.easymall.dtos.request.payment.VnPayPaymentRequest
+                    .builder()
                     .trackingNumber(order.getTrackingNumber())
                     .ipAddress(ip)
                     .amount(order.getFinalPaymentMoney().longValue())
@@ -243,7 +247,7 @@ public class OrderServiceImpl implements OrderService {
         } else {
             finalStatus = OrderStatus.PENDING_PAYMENT;
         }
-        
+
         savedOrder.setOrderStatus(finalStatus);
         orderRepository.save(savedOrder);
 
@@ -297,7 +301,8 @@ public class OrderServiceImpl implements OrderService {
         // Rollback CouponUsage
         couponUsageRepository.deleteByOrderId(orderId);
 
-        // TODO: nếu paymentStatus == PAID → gọi cổng thanh toán để hoàn tiền (REFUND API)
+        // TODO: nếu paymentStatus == PAID → gọi cổng thanh toán để hoàn tiền (REFUND
+        // API)
 
         order.setOrderStatus(OrderStatus.CANCELLED);
         orderRepository.save(order);

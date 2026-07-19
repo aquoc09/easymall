@@ -2,6 +2,7 @@ package com.quocnva.easymall.dtos.response.risk;
 
 import lombok.Builder;
 import lombok.Data;
+import com.quocnva.easymall.enums.RiskAlertStatus;
 
 import java.time.OffsetDateTime;
 
@@ -13,6 +14,6 @@ public class RiskAlertResponse {
     private Long orderId;
     private String ruleCode;
     private String description;
-    private String status;
+    private RiskAlertStatus status;
     private OffsetDateTime createdAt;
 }

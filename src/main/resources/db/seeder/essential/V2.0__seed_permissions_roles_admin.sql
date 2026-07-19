@@ -2,8 +2,6 @@
 -- V2.0: Seed permissions, admin account, and role-permission assignments
 -- ══════════════════════════════════════════════════════════════════════
 
--- Enable pgcrypto for BCrypt password hashing
-CREATE EXTENSION IF NOT EXISTS pgcrypto;
 
 -- ── 1. Seed Permissions ─────────────────────────────────────────────
 INSERT INTO permissions (permission_name, description) VALUES

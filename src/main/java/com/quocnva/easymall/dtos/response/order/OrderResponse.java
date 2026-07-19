@@ -28,6 +28,7 @@ public class OrderResponse {
     // ── Tài chính ──────────────────────────────────────────────────
     private BigDecimal totalProductMoney;
     private BigDecimal originalShippingFee;
+    private BigDecimal shopDiscountAmount;
     private BigDecimal shippingDiscountAmount;
     private BigDecimal paymentDiscountAmount;
     private BigDecimal finalPaymentMoney;

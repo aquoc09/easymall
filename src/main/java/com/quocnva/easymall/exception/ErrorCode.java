@@ -78,6 +78,7 @@ public enum ErrorCode {
     COUPON_USAGE_LIMIT_EXCEEDED(9005, "error.coupon-usage-limit-exceeded", HttpStatus.BAD_REQUEST),
     INADEQUATE_ORDER_VALUE(9006, "error.inadequate-order-value", HttpStatus.BAD_REQUEST),
     BUDGET_EXCEEDED(9007, "error.budget-exceeded", HttpStatus.BAD_REQUEST),
+    INVALID_PAYMENT_METHOD_FOR_COUPON(9008, "error.invalid-payment-method-for-coupon", HttpStatus.BAD_REQUEST),
 
     // ── Order ─────────────────────────────────────────────────────────────────
     ORDER_NOT_FOUND(10001, "error.order-not-found", HttpStatus.NOT_FOUND),

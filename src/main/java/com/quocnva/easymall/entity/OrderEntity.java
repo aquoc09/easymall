@@ -82,6 +82,10 @@ public class OrderEntity {
     private BigDecimal originalShippingFee = BigDecimal.ZERO;
 
     @Builder.Default
+    @Column(name = "shop_discount_amount", precision = 15, scale = 2)
+    private BigDecimal shopDiscountAmount = BigDecimal.ZERO;
+
+    @Builder.Default
     @Column(name = "shipping_discount_amount", precision = 15, scale = 2)
     private BigDecimal shippingDiscountAmount = BigDecimal.ZERO;
 
