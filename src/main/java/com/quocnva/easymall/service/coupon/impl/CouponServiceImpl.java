@@ -124,9 +124,22 @@ public class CouponServiceImpl implements CouponService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<CouponResponse> getAvailableCoupons() {
+    public List<CouponResponse> getAvailableCoupons(String userEmail) {
         OffsetDateTime now = OffsetDateTime.now();
-        return couponRepository.findAvailableCoupons(now).stream()
+        List<CouponEntity> availableCoupons = couponRepository.findAvailableCoupons(now);
+        
+        if (userEmail != null && !userEmail.equals("anonymousUser")) {
+            UserEntity user = getUserByEmail(userEmail);
+            return availableCoupons.stream()
+                    .filter(coupon -> {
+                        long userUsed = couponUsageRepository.countByCouponAndUser(coupon, user);
+                        return userUsed < coupon.getUserUsageLimit();
+                    })
+                    .map(couponMapper::toResponse)
+                    .toList();
+        }
+        
+        return availableCoupons.stream()
                 .map(couponMapper::toResponse)
                 .toList();
     }

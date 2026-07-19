@@ -87,9 +87,10 @@ public class CouponController {
     }
 
     @GetMapping("/available")
-    public ApiResponse<java.util.List<CouponResponse>> getAvailableCoupons() {
+    public ApiResponse<java.util.List<CouponResponse>> getAvailableCoupons(Authentication authentication) {
+        String username = authentication != null ? authentication.getName() : null;
         return ApiResponse.<java.util.List<CouponResponse>>builder()
-                .result(couponService.getAvailableCoupons())
+                .result(couponService.getAvailableCoupons(username))
                 .message(Translator.toLocale("success.coupon.fetched"))
                 .build();
     }

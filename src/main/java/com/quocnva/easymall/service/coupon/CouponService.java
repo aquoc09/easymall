@@ -26,7 +26,7 @@ public interface CouponService {
 
     CouponApplyResponse previewApply(CouponApplyRequest request, String userEmail);
 
-    java.util.List<CouponResponse> getAvailableCoupons();
+    List<CouponResponse> getAvailableCoupons(String userEmail);
 
     /**
      * Validate coupon tại thời điểm checkout và trả về entity đã lock.
