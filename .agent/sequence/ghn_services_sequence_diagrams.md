@@ -1,10 +1,10 @@
 # Sequence Diagrams for GHN Services
 
-This document contains the sequence diagrams for operations within `GhnOrderServiceImpl`, `GhnShippingServiceImpl`, and `GhnWebhookServiceImpl`.
+Tài liệu này chứa các sơ đồ tuần tự cho các hoạt động trong `GhnOrderServiceImpl`, `GhnShippingServiceImpl`, và `GhnWebhookServiceImpl`.
 
 ## 1. GhnOrderServiceImpl
 
-### 1.1. Create Order (`createOrder`)
+### 1.1. Tạo Đơn hàng (`createOrder`)
 
 ```mermaid
 sequenceDiagram
@@ -16,18 +16,18 @@ sequenceDiagram
     Client->>GhnOrderService: createOrder(OrderEntity)
     activate GhnOrderService
 
-    GhnOrderService->>GhnOrderService: Calculate totalWeightGram (sum of items)
-    GhnOrderService->>GhnOrderService: Map ShippingMethod to service_type_id
-    GhnOrderService->>GhnOrderService: Calculate codAmount
-    GhnOrderService->>GhnOrderService: Build JSON payload and headers
+    GhnOrderService->>GhnOrderService: Tính tổng trọng lượng totalWeightGram (tổng của các sản phẩm)
+    GhnOrderService->>GhnOrderService: Ánh xạ ShippingMethod thành service_type_id
+    GhnOrderService->>GhnOrderService: Tính codAmount
+    GhnOrderService->>GhnOrderService: Xây dựng JSON payload và headers
 
     GhnOrderService->>RestTemplate: exchange("/v2/shipping-order/create", POST)
     activate RestTemplate
     alt RestClientException
         RestTemplate-->>GhnOrderService: Exception
         GhnOrderService-->>Client: throw AppException(GHN_INTEGRATION_ERROR)
-    else Success response
-        RestTemplate-->>GhnOrderService: Response JSON string
+    else Phản hồi thành công
+        RestTemplate-->>GhnOrderService: Chuỗi JSON phản hồi
     end
     deactivate RestTemplate
 
@@ -37,7 +37,7 @@ sequenceDiagram
     alt code != 200
         GhnOrderService-->>Client: throw AppException(GHN_INTEGRATION_ERROR)
     else code == 200
-        GhnOrderService->>GhnOrderService: Extract order_code, total_fee, expected_delivery_time
+        GhnOrderService->>GhnOrderService: Trích xuất order_code, total_fee, expected_delivery_time
         GhnOrderService-->>Client: GhnCreateOrderResponse
     end
     deactivate GhnOrderService
@@ -47,7 +47,7 @@ sequenceDiagram
 
 ## 2. GhnShippingServiceImpl
 
-### 2.1. Get Available Services (`getAvailableServices`)
+### 2.1. Lấy các dịch vụ khả dụng (`getAvailableServices`)
 
 ```mermaid
 sequenceDiagram
@@ -59,11 +59,11 @@ sequenceDiagram
     Client->>GhnShippingService: getAvailableServices(toDistrictId)
     activate GhnShippingService
 
-    GhnShippingService->>GhnShippingService: Build payload (shop_id, from_district, to_district)
+    GhnShippingService->>GhnShippingService: Xây dựng payload (shop_id, from_district, to_district)
 
     GhnShippingService->>RestTemplate: exchange("/v2/shipping-order/available-services", POST)
     activate RestTemplate
-    RestTemplate-->>GhnShippingService: Response JSON string
+    RestTemplate-->>GhnShippingService: Chuỗi JSON phản hồi
     deactivate RestTemplate
 
     GhnShippingService->>ObjectMapper: readTree(responseJson)
@@ -81,7 +81,7 @@ sequenceDiagram
     deactivate GhnShippingService
 ```
 
-### 2.2. Calculate Fee (`calculateFee`)
+### 2.2. Tính Phí (`calculateFee`)
 
 ```mermaid
 sequenceDiagram
@@ -96,24 +96,24 @@ sequenceDiagram
     GhnShippingService->>GhnShippingService: getAvailableServices(toDistrictId)
     GhnShippingService-->>GhnShippingService: List<GhnServiceResponse>
 
-    alt services is empty
+    alt danh sách dịch vụ trống
         GhnShippingService-->>Client: throw AppException(GHN_SERVICE_UNAVAILABLE)
     end
 
-    alt request.serviceId is provided
-        GhnShippingService->>GhnShippingService: Find matching service
-        alt not found
+    alt request.serviceId được cung cấp
+        GhnShippingService->>GhnShippingService: Tìm dịch vụ khớp
+        alt không tìm thấy
             GhnShippingService-->>Client: throw AppException(GHN_SERVICE_UNAVAILABLE)
         end
-    else request.serviceId is null
-        GhnShippingService->>GhnShippingService: Pick first service
+    else request.serviceId là null
+        GhnShippingService->>GhnShippingService: Chọn dịch vụ đầu tiên
     end
 
-    GhnShippingService->>GhnShippingService: Build payload
+    GhnShippingService->>GhnShippingService: Xây dựng payload
 
     GhnShippingService->>RestTemplate: exchange("/v2/shipping-order/fee", POST)
     activate RestTemplate
-    RestTemplate-->>GhnShippingService: Response JSON string
+    RestTemplate-->>GhnShippingService: Chuỗi JSON phản hồi
     deactivate RestTemplate
 
     GhnShippingService->>ObjectMapper: readTree(responseJson)
@@ -121,7 +121,7 @@ sequenceDiagram
 
     GhnShippingService->>GhnShippingService: checkGhnCode(root)
 
-    GhnShippingService->>GhnShippingService: Extract total, service_fee, insurance_fee
+    GhnShippingService->>GhnShippingService: Trích xuất total, service_fee, insurance_fee
     
     GhnShippingService-->>Client: GhnShippingFeeResponse
     deactivate GhnShippingService
@@ -131,7 +131,7 @@ sequenceDiagram
 
 ## 3. GhnWebhookServiceImpl
 
-### 3.1. Handle Webhook (`handleWebhook`)
+### 3.1. Xử lý Webhook (`handleWebhook`)
 
 ```mermaid
 sequenceDiagram
@@ -144,10 +144,10 @@ sequenceDiagram
 
     GhnWebhookService->>OrderRepository: findByTrackingNumber(request.orderCode)
     activate OrderRepository
-    alt Order not found
+    alt Không tìm thấy đơn hàng
         OrderRepository-->>GhnWebhookService: Optional.empty()
-        GhnWebhookService-->>GHN_System: return (Ignore)
-    else Order found
+        GhnWebhookService-->>GHN_System: trả về (Bỏ qua)
+    else Đã tìm thấy đơn hàng
         OrderRepository-->>GhnWebhookService: OrderEntity
     end
     deactivate OrderRepository

@@ -1,8 +1,8 @@
 # Sequence Diagrams for Cart Service
 
-This document contains the sequence diagrams for all operations within `CartServiceImpl`.
+Tài liệu này chứa các sơ đồ tuần tự cho tất cả các hoạt động trong `CartServiceImpl`.
 
-## 1. Get Cart (`getCart`)
+## 1. Lấy Giỏ hàng (`getCart`)
 
 ```mermaid
 sequenceDiagram
@@ -16,7 +16,7 @@ sequenceDiagram
     
     CartService->>UserRepository: findByEmail(email)
     activate UserRepository
-    UserRepository-->>CartService: UserEntity (or throw USER_NOT_FOUND)
+    UserRepository-->>CartService: UserEntity (hoặc ném ra USER_NOT_FOUND)
     deactivate UserRepository
 
     CartService->>CartRepository: findByUser_UserId(userId)
@@ -24,16 +24,16 @@ sequenceDiagram
     CartRepository-->>CartService: Optional<CartEntity>
     deactivate CartRepository
 
-    alt Cart is present
+    alt Giỏ hàng có tồn tại
         CartService->>CartService: buildCartResponse(cart)
         CartService-->>Client: CartResponse
-    else Cart is empty
-        CartService-->>Client: CartResponse (empty structure)
+    else Giỏ hàng trống
+        CartService-->>Client: CartResponse (cấu trúc trống)
     end
     deactivate CartService
 ```
 
-## 2. Add Item to Cart (`addItem`)
+## 2. Thêm Sản phẩm vào Giỏ hàng (`addItem`)
 
 ```mermaid
 sequenceDiagram
@@ -53,16 +53,16 @@ sequenceDiagram
     CartService->>CartService: getOrCreateCart(user)
     activate CartService
     CartService->>CartRepository: findByUser_UserId(userId)
-    alt Cart found
+    alt Tìm thấy giỏ hàng
         CartRepository-->>CartService: CartEntity
-    else Cart not found
+    else Không tìm thấy giỏ hàng
         CartService->>CartRepository: save(new CartEntity)
         CartRepository-->>CartService: CartEntity
     end
     deactivate CartService
 
     CartService->>ProductVariantRepository: findById(request.variantId)
-    ProductVariantRepository-->>CartService: ProductVariantEntity (or throw PRODUCT_VARIANT_NOT_FOUND)
+    ProductVariantRepository-->>CartService: ProductVariantEntity (hoặc ném ra PRODUCT_VARIANT_NOT_FOUND)
 
     CartService->>CartService: validateNotBanned(variant)
     CartService->>CartService: calculateLimit(variant)
@@ -70,16 +70,16 @@ sequenceDiagram
     CartService->>CartItemRepository: findByCart_CartIdAndVariant_VariantId()
     CartItemRepository-->>CartService: Optional<CartItemEntity>
 
-    CartService->>CartService: calculate newTotalQty = currentQty + request.qty
+    CartService->>CartService: tính toán newTotalQty = currentQty + request.qty
     CartService->>CartService: validateQuantityLimit(variant, newTotalQty, limit)
 
-    alt Item already exists in cart
-        CartService->>CartItemRepository: save(updated item)
-    else Item does not exist
-        CartService->>CartItemRepository: save(new item)
+    alt Sản phẩm đã tồn tại trong giỏ hàng
+        CartService->>CartItemRepository: save(sản phẩm đã cập nhật)
+    else Sản phẩm chưa tồn tại
+        CartService->>CartItemRepository: save(sản phẩm mới)
     end
 
-    CartService->>CartRepository: findByUser_UserId(userId) (reload cart)
+    CartService->>CartRepository: findByUser_UserId(userId) (tải lại giỏ hàng)
     CartRepository-->>CartService: CartEntity
     
     CartService->>CartService: buildCartResponse(cart)
@@ -87,7 +87,7 @@ sequenceDiagram
     deactivate CartService
 ```
 
-## 3. Update Item in Cart (`updateItem`)
+## 3. Cập nhật Sản phẩm trong Giỏ hàng (`updateItem`)
 
 ```mermaid
 sequenceDiagram
@@ -107,10 +107,10 @@ sequenceDiagram
     CartService-->>CartService: CartEntity
 
     CartService->>CartItemRepository: findByCart_CartIdAndVariant_VariantId()
-    alt Item not found
+    alt Không tìm thấy sản phẩm
         CartItemRepository-->>CartService: Optional.empty()
         CartService-->>Client: throw AppException(CART_ITEM_NOT_FOUND)
-    else Item found
+    else Tìm thấy sản phẩm
         CartItemRepository-->>CartService: CartItemEntity
     end
 
@@ -118,9 +118,9 @@ sequenceDiagram
     CartService->>CartService: calculateLimit(variant)
     CartService->>CartService: validateQuantityLimit(variant, request.qty, limit)
 
-    CartService->>CartItemRepository: save(updated item)
+    CartService->>CartItemRepository: save(sản phẩm đã cập nhật)
     
-    CartService->>CartRepository: findByUser_UserId(userId) (reload cart)
+    CartService->>CartRepository: findByUser_UserId(userId) (tải lại giỏ hàng)
     CartRepository-->>CartService: CartEntity
     
     CartService->>CartService: buildCartResponse(cart)
@@ -128,7 +128,7 @@ sequenceDiagram
     deactivate CartService
 ```
 
-## 4. Remove Item from Cart (`removeItem`)
+## 4. Xóa Sản phẩm khỏi Giỏ hàng (`removeItem`)
 
 ```mermaid
 sequenceDiagram
@@ -145,18 +145,18 @@ sequenceDiagram
     UserRepository-->>CartService: UserEntity
 
     CartService->>CartRepository: findByUser_UserId(userId)
-    alt Cart not found
+    alt Không tìm thấy giỏ hàng
         CartRepository-->>CartService: Optional.empty()
         CartService-->>Client: throw AppException(CART_NOT_FOUND)
-    else Cart found
+    else Tìm thấy giỏ hàng
         CartRepository-->>CartService: CartEntity
     end
 
     CartService->>CartItemRepository: findByCart_CartIdAndVariant_VariantId()
-    alt Item not found
+    alt Không tìm thấy sản phẩm
         CartItemRepository-->>CartService: Optional.empty()
         CartService-->>Client: throw AppException(CART_ITEM_NOT_FOUND)
-    else Item found
+    else Tìm thấy sản phẩm
         CartItemRepository-->>CartService: CartItemEntity
     end
 
@@ -166,7 +166,7 @@ sequenceDiagram
     deactivate CartService
 ```
 
-## 5. Clear Cart (`clearCart`)
+## 5. Xóa sạch Giỏ hàng (`clearCart`)
 
 ```mermaid
 sequenceDiagram
@@ -183,10 +183,10 @@ sequenceDiagram
     UserRepository-->>CartService: UserEntity
 
     CartService->>CartRepository: findByUser_UserId(userId)
-    alt Cart not found
+    alt Không tìm thấy giỏ hàng
         CartRepository-->>CartService: Optional.empty()
         CartService-->>Client: throw AppException(CART_NOT_FOUND)
-    else Cart found
+    else Tìm thấy giỏ hàng
         CartRepository-->>CartService: CartEntity
     end
 

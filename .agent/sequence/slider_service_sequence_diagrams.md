@@ -1,8 +1,8 @@
 # Sequence Diagrams for Slider Service
 
-This document contains the sequence diagrams for operations within `SliderServiceImpl`.
+Tài liệu này chứa các sơ đồ tuần tự cho các hoạt động trong `SliderServiceImpl`.
 
-## 1. Create Slider (`createSlider`)
+## 1. Tạo Slider (`createSlider`)
 
 ```mermaid
 sequenceDiagram
@@ -29,7 +29,7 @@ sequenceDiagram
     deactivate SliderService
 ```
 
-## 2. Update Slider (`updateSlider`)
+## 2. Cập nhật Slider (`updateSlider`)
 
 ```mermaid
 sequenceDiagram
@@ -43,7 +43,7 @@ sequenceDiagram
 
     SliderService->>SliderRepository: findById(sliderId)
     activate SliderRepository
-    SliderRepository-->>SliderService: SliderEntity (or throw NOT_FOUND)
+    SliderRepository-->>SliderService: SliderEntity (hoặc ném ra NOT_FOUND)
     deactivate SliderRepository
 
     SliderService->>SliderMapper: updateEntityFromRequest()
@@ -60,7 +60,7 @@ sequenceDiagram
     deactivate SliderService
 ```
 
-## 3. Delete Slider (`deleteSlider`)
+## 3. Xóa Slider (`deleteSlider`)
 
 ```mermaid
 sequenceDiagram
@@ -73,7 +73,7 @@ sequenceDiagram
 
     SliderService->>SliderRepository: findById(sliderId)
     activate SliderRepository
-    SliderRepository-->>SliderService: SliderEntity (or throw NOT_FOUND)
+    SliderRepository-->>SliderService: SliderEntity (hoặc ném ra NOT_FOUND)
     deactivate SliderRepository
 
     SliderService->>SliderRepository: delete(slider)
@@ -85,7 +85,7 @@ sequenceDiagram
     deactivate SliderService
 ```
 
-## 4. Get All Sliders (`getAllSliders`) - For Admin
+## 4. Lấy tất cả Sliders (`getAllSliders`) - Dành cho Admin
 
 ```mermaid
 sequenceDiagram
@@ -102,13 +102,13 @@ sequenceDiagram
     SliderRepository-->>SliderService: Page<SliderEntity>
     deactivate SliderRepository
 
-    SliderService->>SliderMapper: toResponse() (for each)
+    SliderService->>SliderMapper: toResponse() (cho mỗi slider)
     
     SliderService-->>Client: Page<SliderResponse>
     deactivate SliderService
 ```
 
-## 5. Get Active Sliders (`getActiveSliders`) - For Public UI
+## 5. Lấy các Sliders đang hoạt động (`getActiveSliders`) - Dành cho Public UI
 
 ```mermaid
 sequenceDiagram

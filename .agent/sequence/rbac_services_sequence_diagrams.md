@@ -1,10 +1,10 @@
 # Sequence Diagrams for RBAC (Role Based Access Control) Services
 
-This document contains the sequence diagrams for operations within `PermissionServiceImpl` and `RoleServiceImpl`.
+Tài liệu này chứa các sơ đồ tuần tự cho các hoạt động trong `PermissionServiceImpl` và `RoleServiceImpl`.
 
-## 1. Permission Service
+## 1. Dịch vụ Quyền (Permission Service)
 
-### 1.1. Get All Permissions (`getAllPermissions`)
+### 1.1. Lấy Tất cả các Quyền (`getAllPermissions`)
 
 ```mermaid
 sequenceDiagram
@@ -20,13 +20,13 @@ sequenceDiagram
     PermissionRepository-->>PermissionService: List<PermissionEntity>
     deactivate PermissionRepository
 
-    PermissionService->>PermissionService: Map to List<PermissionResponse>
+    PermissionService->>PermissionService: Ánh xạ thành List<PermissionResponse>
     
     PermissionService-->>Client: List<PermissionResponse>
     deactivate PermissionService
 ```
 
-### 1.2. Create Permission (`createPermission`)
+### 1.2. Tạo Quyền (`createPermission`)
 
 ```mermaid
 sequenceDiagram
@@ -42,24 +42,24 @@ sequenceDiagram
     PermissionRepository-->>PermissionService: boolean
     deactivate PermissionRepository
 
-    alt exists is true
+    alt exists là true
         PermissionService-->>Client: throw AppException(PERMISSION_ALREADY_EXISTS)
     end
 
-    PermissionService->>PermissionService: Build PermissionEntity
+    PermissionService->>PermissionService: Xây dựng PermissionEntity
     
     PermissionService->>PermissionRepository: save(entity)
     activate PermissionRepository
     PermissionRepository-->>PermissionService: savedEntity
     deactivate PermissionRepository
 
-    PermissionService->>PermissionService: Map to PermissionResponse
+    PermissionService->>PermissionService: Ánh xạ thành PermissionResponse
     
     PermissionService-->>Client: PermissionResponse
     deactivate PermissionService
 ```
 
-### 1.3. Update Permission (`updatePermission`)
+### 1.3. Cập nhật Quyền (`updatePermission`)
 
 ```mermaid
 sequenceDiagram
@@ -72,23 +72,23 @@ sequenceDiagram
 
     PermissionService->>PermissionRepository: findById(id)
     activate PermissionRepository
-    PermissionRepository-->>PermissionService: PermissionEntity (or throw NOT_FOUND)
+    PermissionRepository-->>PermissionService: PermissionEntity (hoặc ném ra NOT_FOUND)
     deactivate PermissionRepository
 
-    PermissionService->>PermissionService: Update description
+    PermissionService->>PermissionService: Cập nhật description
     
     PermissionService->>PermissionRepository: save(entity)
     activate PermissionRepository
     PermissionRepository-->>PermissionService: savedEntity
     deactivate PermissionRepository
 
-    PermissionService->>PermissionService: Map to PermissionResponse
+    PermissionService->>PermissionService: Ánh xạ thành PermissionResponse
     
     PermissionService-->>Client: PermissionResponse
     deactivate PermissionService
 ```
 
-### 1.4. Delete Permission (`deletePermission`)
+### 1.4. Xóa Quyền (`deletePermission`)
 
 ```mermaid
 sequenceDiagram
@@ -101,7 +101,7 @@ sequenceDiagram
 
     PermissionService->>PermissionRepository: findById(id)
     activate PermissionRepository
-    PermissionRepository-->>PermissionService: PermissionEntity (or throw NOT_FOUND)
+    PermissionRepository-->>PermissionService: PermissionEntity (hoặc ném ra NOT_FOUND)
     deactivate PermissionRepository
 
     PermissionService->>PermissionRepository: delete(entity)
@@ -115,9 +115,9 @@ sequenceDiagram
 
 ---
 
-## 2. Role Service
+## 2. Dịch vụ Vai trò (Role Service)
 
-### 2.1. Get All Roles (`getAllRoles`)
+### 2.1. Lấy Tất cả Vai trò (`getAllRoles`)
 
 ```mermaid
 sequenceDiagram
@@ -133,17 +133,17 @@ sequenceDiagram
     RoleRepository-->>RoleService: List<RoleEntity>
     deactivate RoleRepository
 
-    loop For each RoleEntity
+    loop Đối với mỗi RoleEntity
         RoleService->>RoleRepository: findByIdWithPermissions(roleId)
-        RoleRepository-->>RoleService: RoleEntity (with permissions loaded)
-        RoleService->>RoleService: Map to RoleResponse
+        RoleRepository-->>RoleService: RoleEntity (với các quyền đã được tải)
+        RoleService->>RoleService: Ánh xạ thành RoleResponse
     end
     
     RoleService-->>Client: List<RoleResponse>
     deactivate RoleService
 ```
 
-### 2.2. Get Role By ID (`getRoleById`)
+### 2.2. Lấy Vai trò theo ID (`getRoleById`)
 
 ```mermaid
 sequenceDiagram
@@ -156,16 +156,16 @@ sequenceDiagram
 
     RoleService->>RoleRepository: findByIdWithPermissions(id)
     activate RoleRepository
-    RoleRepository-->>RoleService: RoleEntity (or throw ROLE_NOT_FOUND)
+    RoleRepository-->>RoleService: RoleEntity (hoặc ném ra ROLE_NOT_FOUND)
     deactivate RoleRepository
 
-    RoleService->>RoleService: Map to RoleResponse
+    RoleService->>RoleService: Ánh xạ thành RoleResponse
     
     RoleService-->>Client: RoleResponse
     deactivate RoleService
 ```
 
-### 2.3. Create Role (`createRole`)
+### 2.3. Tạo Vai trò (`createRole`)
 
 ```mermaid
 sequenceDiagram
@@ -182,7 +182,7 @@ sequenceDiagram
     RoleRepository-->>RoleService: boolean
     deactivate RoleRepository
 
-    alt exists is true
+    alt exists là true
         RoleService-->>Client: throw AppException(ROLE_ALREADY_EXISTS)
     end
 
@@ -191,24 +191,24 @@ sequenceDiagram
     PermissionRepository-->>RoleService: Set<PermissionEntity>
     deactivate PermissionRepository
 
-    alt sizes do not match
+    alt kích thước không khớp
         RoleService-->>Client: throw AppException(PERMISSION_NOT_FOUND)
     end
 
-    RoleService->>RoleService: Build RoleEntity with permissions
+    RoleService->>RoleService: Xây dựng RoleEntity với các quyền
     
     RoleService->>RoleRepository: save(entity)
     activate RoleRepository
     RoleRepository-->>RoleService: savedEntity
     deactivate RoleRepository
 
-    RoleService->>RoleService: Map to RoleResponse
+    RoleService->>RoleService: Ánh xạ thành RoleResponse
     
     RoleService-->>Client: RoleResponse
     deactivate RoleService
 ```
 
-### 2.4. Update Role (`updateRole`)
+### 2.4. Cập nhật Vai trò (`updateRole`)
 
 ```mermaid
 sequenceDiagram
@@ -222,7 +222,7 @@ sequenceDiagram
 
     RoleService->>RoleRepository: findByIdWithPermissions(id)
     activate RoleRepository
-    RoleRepository-->>RoleService: RoleEntity (or throw ROLE_NOT_FOUND)
+    RoleRepository-->>RoleService: RoleEntity (hoặc ném ra ROLE_NOT_FOUND)
     deactivate RoleRepository
 
     RoleService->>PermissionRepository: findAllByPermissionIdIn(request.permissionIds)
@@ -230,24 +230,24 @@ sequenceDiagram
     PermissionRepository-->>RoleService: Set<PermissionEntity>
     deactivate PermissionRepository
 
-    alt sizes do not match
+    alt kích thước không khớp
         RoleService-->>Client: throw AppException(PERMISSION_NOT_FOUND)
     end
 
-    RoleService->>RoleService: Update description and permissions
+    RoleService->>RoleService: Cập nhật description và permissions
     
     RoleService->>RoleRepository: save(entity)
     activate RoleRepository
     RoleRepository-->>RoleService: savedEntity
     deactivate RoleRepository
 
-    RoleService->>RoleService: Map to RoleResponse
+    RoleService->>RoleService: Ánh xạ thành RoleResponse
     
     RoleService-->>Client: RoleResponse
     deactivate RoleService
 ```
 
-### 2.5. Delete Role (`deleteRole`)
+### 2.5. Xóa Vai trò (`deleteRole`)
 
 ```mermaid
 sequenceDiagram
@@ -260,10 +260,10 @@ sequenceDiagram
 
     RoleService->>RoleRepository: findById(id)
     activate RoleRepository
-    RoleRepository-->>RoleService: RoleEntity (or throw ROLE_NOT_FOUND)
+    RoleRepository-->>RoleService: RoleEntity (hoặc ném ra ROLE_NOT_FOUND)
     deactivate RoleRepository
 
-    alt roleName is PROTECTED (ROLE_ADMIN or ROLE_USER)
+    alt roleName được BẢO VỆ (ROLE_ADMIN hoặc ROLE_USER)
         RoleService-->>Client: throw AppException(ROLE_PROTECTED)
     end
 

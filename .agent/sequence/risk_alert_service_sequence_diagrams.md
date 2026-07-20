@@ -1,10 +1,10 @@
 # Sequence Diagrams for Risk Alert Service
 
-This document contains the sequence diagrams for operations within `RiskServiceImpl` and the asynchronous `RiskRuleEngine`.
+Tài liệu này chứa các sơ đồ tuần tự cho các hoạt động trong `RiskServiceImpl` và `RiskRuleEngine` bất đồng bộ.
 
-## 1. Rule Management (`getAllRules`, `updateRule`)
+## 1. Quản lý Quy tắc (`getAllRules`, `updateRule`)
 
-This flow illustrates how the admin updates a Risk Rule.
+Luồng này minh họa cách admin cập nhật một Quy tắc Rủi ro (Risk Rule).
 
 ```mermaid
 sequenceDiagram
@@ -17,25 +17,25 @@ sequenceDiagram
 
     RiskService->>RiskRuleConfigRepository: findById(ruleCode)
     activate RiskRuleConfigRepository
-    RiskRuleConfigRepository-->>RiskService: RiskRuleConfigEntity (or throw NOT_FOUND)
+    RiskRuleConfigRepository-->>RiskService: RiskRuleConfigEntity (hoặc ném ra NOT_FOUND)
     deactivate RiskRuleConfigRepository
 
-    RiskService->>RiskService: Update threshold, timeWindow, isActive
+    RiskService->>RiskService: Cập nhật threshold, timeWindow, isActive
 
     RiskService->>RiskRuleConfigRepository: save(rule)
     activate RiskRuleConfigRepository
     RiskRuleConfigRepository-->>RiskService: savedRule
     deactivate RiskRuleConfigRepository
 
-    RiskService->>RiskService: Map to RiskRuleResponse
+    RiskService->>RiskService: Ánh xạ thành RiskRuleResponse
 
     RiskService-->>Client: RiskRuleResponse
     deactivate RiskService
 ```
 
-## 2. Alert Management (`getAlerts`, `resolveAlert`)
+## 2. Quản lý Cảnh báo (`getAlerts`, `resolveAlert`)
 
-This flow shows how the admin resolves a fraud alert (e.g., confirming it's fraud or marking it as a false positive).
+Luồng này cho thấy cách admin giải quyết một cảnh báo gian lận (ví dụ: xác nhận đó là gian lận hoặc đánh dấu nó là dương tính giả).
 
 ```mermaid
 sequenceDiagram
@@ -49,23 +49,23 @@ sequenceDiagram
 
     RiskService->>RiskAlertRepository: findById(alertId)
     activate RiskAlertRepository
-    RiskAlertRepository-->>RiskService: RiskAlertEntity (or throw NOT_FOUND)
+    RiskAlertRepository-->>RiskService: RiskAlertEntity (hoặc ném ra NOT_FOUND)
     deactivate RiskAlertRepository
 
-    alt status not in [RESOLVED, FALSE_POSITIVE]
+    alt trạng thái không thuộc [RESOLVED, FALSE_POSITIVE]
         RiskService-->>Client: throw AppException(INVALID_REQUEST)
     end
 
-    RiskService->>RiskService: Set alert status
+    RiskService->>RiskService: Cập nhật trạng thái cảnh báo
     
     RiskService->>RiskAlertRepository: save(alert)
     activate RiskAlertRepository
     RiskAlertRepository-->>RiskService: savedAlert
     deactivate RiskAlertRepository
 
-    alt status == RESOLVED (Actual Fraud)
-        alt alert.order != null and order.status != CANCELLED
-            RiskService->>RiskService: Set order status = CANCELLED
+    alt trạng thái == RESOLVED (Gian lận thực sự)
+        alt alert.order != null và order.status != CANCELLED
+            RiskService->>RiskService: Đặt trạng thái order = CANCELLED
             RiskService->>OrderRepository: save(order)
             activate OrderRepository
             OrderRepository-->>RiskService: savedOrder
@@ -77,9 +77,9 @@ sequenceDiagram
     deactivate RiskService
 ```
 
-## 3. Risk Evaluation Engine (`evaluateOrderRisk`)
+## 3. Công cụ đánh giá rủi ro (`evaluateOrderRisk`)
 
-This flow describes the automatic, asynchronous background job that evaluates orders against active risk rules immediately after they are created.
+Luồng này mô tả công việc ngầm bất đồng bộ tự động đánh giá các đơn hàng dựa trên các quy tắc rủi ro đang hoạt động ngay sau khi chúng được tạo.
 
 ```mermaid
 sequenceDiagram
@@ -91,34 +91,34 @@ sequenceDiagram
     participant RiskAlertRepository
 
     SystemEvent->>RiskRuleEngine: OrderCreatedEvent(orderId)
-    Note over RiskRuleEngine: Runs Asynchronously (@Async) after transaction commit
+    Note over RiskRuleEngine: Chạy bất đồng bộ (@Async) sau khi transaction commit
     activate RiskRuleEngine
 
     RiskRuleEngine->>OrderRepository: findById(orderId)
     activate OrderRepository
-    OrderRepository-->>RiskRuleEngine: OrderEntity (User & Payment info)
+    OrderRepository-->>RiskRuleEngine: OrderEntity (Thông tin người dùng & thanh toán)
     deactivate OrderRepository
 
     RiskRuleEngine->>RiskRuleConfigRepository: findByIsActiveTrue()
     activate RiskRuleConfigRepository
-    RiskRuleConfigRepository-->>RiskRuleEngine: List<RiskRuleConfigEntity> (active rules)
+    RiskRuleConfigRepository-->>RiskRuleEngine: List<RiskRuleConfigEntity> (các quy tắc đang hoạt động)
     deactivate RiskRuleConfigRepository
 
-    loop For each active rule
+    loop Đối với mỗi quy tắc đang hoạt động
         alt ruleCode == R1_MULTIPLE_DEVICES
             RiskRuleEngine->>DeviceSessionRepository: countDistinctDevicesByUserSince(userId, windowStart)
             DeviceSessionRepository-->>RiskRuleEngine: deviceCount
-            RiskRuleEngine->>RiskRuleEngine: Check if deviceCount >= threshold
+            RiskRuleEngine->>RiskRuleEngine: Kiểm tra nếu deviceCount >= threshold
         else ruleCode == R2_FAILED_PAYMENTS
             RiskRuleEngine->>OrderRepository: countOrdersByUserAndStatusSince(CANCELLED, windowStart)
             OrderRepository-->>RiskRuleEngine: failedCount
-            RiskRuleEngine->>RiskRuleEngine: Check if failedCount >= threshold
+            RiskRuleEngine->>RiskRuleEngine: Kiểm tra nếu failedCount >= threshold
         else ruleCode == R5_NEW_ACC_HIGH_VALUE
-            RiskRuleEngine->>RiskRuleEngine: Check if user is < 7 days old AND order value >= threshold
+            RiskRuleEngine->>RiskRuleEngine: Kiểm tra nếu người dùng < 7 ngày tuổi VÀ giá trị đơn hàng >= threshold
         end
 
         alt isViolated == true
-            RiskRuleEngine->>RiskRuleEngine: Build RiskAlertEntity (Status: PENDING)
+            RiskRuleEngine->>RiskRuleEngine: Xây dựng RiskAlertEntity (Trạng thái: PENDING)
             RiskRuleEngine->>RiskAlertRepository: save(alert)
             activate RiskAlertRepository
             RiskAlertRepository-->>RiskRuleEngine: savedAlert

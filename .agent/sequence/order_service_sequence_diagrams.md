@@ -1,8 +1,8 @@
 # Sequence Diagrams for Order Service
 
-This document contains the sequence diagrams for all operations within `OrderServiceImpl`.
+Tài liệu này chứa các sơ đồ tuần tự cho tất cả các hoạt động trong `OrderServiceImpl`.
 
-## 1. Checkout (`checkout`)
+## 1. Thanh toán (`checkout`)
 
 ```mermaid
 sequenceDiagram
@@ -30,49 +30,49 @@ sequenceDiagram
     CartItemRepository-->>OrderService: List<CartItemEntity>
     deactivate CartItemRepository
 
-    loop Validate cart ownership
-        OrderService->>OrderService: verify item belongs to user's cart
+    loop Xác thực quyền sở hữu giỏ hàng
+        OrderService->>OrderService: xác minh sản phẩm thuộc về giỏ hàng của người dùng
     end
 
-    loop Validate product variant
-        OrderService->>OrderService: verify isActive
-        OrderService->>OrderService: check stockQuantity >= lockedStock + quantity
-        OrderService->>OrderService: check quantity <= maxOrderQuantity
+    loop Xác thực biến thể sản phẩm
+        OrderService->>OrderService: xác minh isActive
+        OrderService->>OrderService: kiểm tra stockQuantity >= lockedStock + quantity
+        OrderService->>OrderService: kiểm tra quantity <= maxOrderQuantity
     end
 
-    loop Validate & Apply Coupons (if any)
+    loop Xác thực & Áp dụng Mã giảm giá (nếu có)
         OrderService->>CouponService: validateForCheckout(code, totalProductMoney, userEmail)
         CouponService-->>OrderService: CouponEntity
         OrderService->>CouponService: calculateDiscount(coupon, totalProductMoney)
         CouponService-->>OrderService: discountAmount
-        OrderService->>OrderService: aggregate shop/shipping/payment discount
+        OrderService->>OrderService: tổng hợp giảm giá của shop/vận chuyển/thanh toán
     end
 
-    OrderService->>OrderService: Calculate totalWeightGram
+    OrderService->>OrderService: Tính toán totalWeightGram
 
     OrderService->>GhnShippingService: calculateFee(ShippingFeeRequest)
     activate GhnShippingService
     GhnShippingService-->>OrderService: GhnShippingFeeResponse (originalShippingFee)
     deactivate GhnShippingService
 
-    OrderService->>OrderService: Calculate finalPaymentMoney
+    OrderService->>OrderService: Tính toán finalPaymentMoney
 
-    loop Lock Inventory (Pessimistic Write via JPA)
+    loop Khóa Kho hàng (Pessimistic Write qua JPA)
         OrderService->>ProductVariantRepository: findById(variantId)
         ProductVariantRepository-->>OrderService: ProductVariantEntity
         OrderService->>OrderService: variant.lockedStock += quantity
         OrderService->>ProductVariantRepository: save(variant)
     end
 
-    OrderService->>OrderService: build OrderEntity & OrderDetailEntities
+    OrderService->>OrderService: xây dựng OrderEntity & OrderDetailEntities
     
     OrderService->>OrderRepository: save(order)
     activate OrderRepository
     OrderRepository-->>OrderService: savedOrder
     deactivate OrderRepository
 
-    alt has applied coupons
-        loop Save Coupon Usage
+    alt có áp dụng mã giảm giá
+        loop Lưu lịch sử sử dụng Mã giảm giá (CouponUsageEntity)
             OrderService->>CouponUsageRepository: save(CouponUsageEntity)
         end
     end
@@ -89,7 +89,7 @@ sequenceDiagram
         OrderService->>OrderService: setOrderStatus(PENDING_PAYMENT)
     else request.paymentMethod == COD
         OrderService->>OrderService: setOrderStatus(AWAITING_SHIPMENT)
-    else other methods
+    else các phương thức khác
         OrderService->>OrderService: setOrderStatus(PENDING_PAYMENT)
     end
     
@@ -99,7 +99,7 @@ sequenceDiagram
     deactivate OrderService
 ```
 
-## 2. Get My Orders (`getMyOrders`)
+## 2. Lấy Đơn hàng của tôi (`getMyOrders`)
 
 ```mermaid
 sequenceDiagram
@@ -120,14 +120,14 @@ sequenceDiagram
     OrderRepository-->>OrderService: Page<OrderEntity>
     deactivate OrderRepository
 
-    OrderService->>OrderMapper: map toSummaryResponse
+    OrderService->>OrderMapper: ánh xạ thành toSummaryResponse
     OrderMapper-->>OrderService: Page<OrderSummaryResponse>
 
     OrderService-->>Client: Page<OrderSummaryResponse>
     deactivate OrderService
 ```
 
-## 3. Get My Order Detail (`getMyOrderDetail`)
+## 3. Lấy Chi tiết Đơn hàng của tôi (`getMyOrderDetail`)
 
 ```mermaid
 sequenceDiagram
@@ -145,7 +145,7 @@ sequenceDiagram
 
     OrderService->>OrderRepository: findByOrderIdAndUser(orderId, user)
     activate OrderRepository
-    OrderRepository-->>OrderService: OrderEntity (or throw ORDER_NOT_FOUND)
+    OrderRepository-->>OrderService: OrderEntity (hoặc ném ra ORDER_NOT_FOUND)
     deactivate OrderRepository
 
     OrderService->>OrderMapper: toResponse(order)
@@ -155,7 +155,7 @@ sequenceDiagram
     deactivate OrderService
 ```
 
-## 4. Cancel My Order (`cancelMyOrder`)
+## 4. Hủy Đơn hàng của tôi (`cancelMyOrder`)
 
 ```mermaid
 sequenceDiagram
@@ -179,7 +179,7 @@ sequenceDiagram
         OrderService-->>Client: throw AppException(CANCELLATION_NOT_ALLOWED)
     end
 
-    loop Release locked_stock
+    loop Giải phóng locked_stock
         OrderService->>ProductVariantRepository: findById(variantId)
         ProductVariantRepository-->>OrderService: ProductVariantEntity
         OrderService->>OrderService: variant.lockedStock = max(0, lockedStock - quantity)
@@ -199,7 +199,7 @@ sequenceDiagram
     deactivate OrderService
 ```
 
-## 5. Get All Orders - Admin (`getAllOrders`)
+## 5. Lấy Tất cả Đơn hàng - Admin (`getAllOrders`)
 
 ```mermaid
 sequenceDiagram
@@ -216,14 +216,14 @@ sequenceDiagram
     OrderRepository-->>OrderService: Page<OrderEntity>
     deactivate OrderRepository
 
-    OrderService->>OrderMapper: map toSummaryResponse
+    OrderService->>OrderMapper: ánh xạ thành toSummaryResponse
     OrderMapper-->>OrderService: Page<OrderSummaryResponse>
 
     OrderService-->>Client: Page<OrderSummaryResponse>
     deactivate OrderService
 ```
 
-## 6. Get Order Detail - Admin (`getOrderDetail`)
+## 6. Lấy Chi tiết Đơn hàng - Admin (`getOrderDetail`)
 
 ```mermaid
 sequenceDiagram
@@ -247,7 +247,7 @@ sequenceDiagram
     deactivate OrderService
 ```
 
-## 7. Update Order Status - Admin (`updateOrderStatus`)
+## 7. Cập nhật Trạng thái Đơn hàng - Admin (`updateOrderStatus`)
 
 ```mermaid
 sequenceDiagram

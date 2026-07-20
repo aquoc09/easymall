@@ -1,8 +1,8 @@
 # Sequence Diagrams for VNPAY Payment Service
 
-This document contains the sequence diagrams for operations within `VnPayServiceImpl`.
+Tài liệu này chứa các sơ đồ tuần tự cho các hoạt động trong `VnPayServiceImpl`.
 
-## 1. Create Payment URL (`createPaymentUrl`)
+## 1. Tạo URL thanh toán (`createPaymentUrl`)
 
 ```mermaid
 sequenceDiagram
@@ -15,20 +15,20 @@ sequenceDiagram
 
     VnPayService->>VnPayProperties: get vnp_TmnCode, vnp_ReturnUrl, vnp_PayUrl, secretKey
     
-    VnPayService->>VnPayService: Build params (Version, Command, Amount, TxnRef, OrderInfo, etc.)
-    VnPayService->>VnPayService: Calculate CreateDate and ExpireDate (+15 mins)
-    VnPayService->>VnPayService: Sort fields alphabetically
+    VnPayService->>VnPayService: Xây dựng params (Version, Command, Amount, TxnRef, OrderInfo, v.v.)
+    VnPayService->>VnPayService: Tính toán CreateDate và ExpireDate (+15 phút)
+    VnPayService->>VnPayService: Sắp xếp các trường theo thứ tự bảng chữ cái
     
-    VnPayService->>VnPayService: Build query string and hashData
+    VnPayService->>VnPayService: Xây dựng chuỗi truy vấn và hashData
     
     VnPayService->>VnPayService: hmacSHA512(secretKey, hashData)
-    VnPayService->>VnPayService: Append secureHash to query string
+    VnPayService->>VnPayService: Thêm secureHash vào chuỗi truy vấn
     
-    VnPayService-->>Client: Return paymentUrl
+    VnPayService-->>Client: Trả về paymentUrl
     deactivate VnPayService
 ```
 
-## 2. Handle IPN Webhook (`handleIpn`)
+## 2. Xử lý IPN Webhook (`handleIpn`)
 
 ```mermaid
 sequenceDiagram
@@ -39,33 +39,33 @@ sequenceDiagram
     VNPAYSystem->>VnPayService: handleIpn(HttpServletRequest)
     activate VnPayService
 
-    VnPayService->>VnPayService: Extract all request parameters
-    VnPayService->>VnPayService: Remove vnp_SecureHash and vnp_SecureHashType
+    VnPayService->>VnPayService: Trích xuất tất cả các request parameters
+    VnPayService->>VnPayService: Xóa vnp_SecureHash và vnp_SecureHashType
 
-    VnPayService->>VnPayService: Sort fields and build hashData
+    VnPayService->>VnPayService: Sắp xếp các trường và xây dựng hashData
     VnPayService->>VnPayService: signValue = hmacSHA512(secretKey, hashData)
 
     alt signValue != vnp_SecureHash
-        VnPayService-->>VNPAYSystem: return false (Invalid Signature)
+        VnPayService-->>VNPAYSystem: trả về false (Chữ ký không hợp lệ)
     end
 
-    alt vnp_TmnCode is mismatch
-        VnPayService-->>VNPAYSystem: return false (Invalid TmnCode)
+    alt vnp_TmnCode không khớp
+        VnPayService-->>VNPAYSystem: trả về false (TmnCode không hợp lệ)
     end
 
-    alt vnp_ResponseCode is 00 (Success)
+    alt vnp_ResponseCode là 00 (Thành công)
         VnPayService->>OrderRepository: findByTrackingNumber(vnp_TxnRef)
         activate OrderRepository
         OrderRepository-->>VnPayService: OrderEntity
         deactivate OrderRepository
 
-        alt order is valid AND orderStatus is PENDING_PAYMENT
+        alt order hợp lệ VÀ orderStatus là PENDING_PAYMENT
             VnPayService->>VnPayService: order.setOrderStatus(AWAITING_SHIPMENT)
             VnPayService->>OrderRepository: save(order)
-            VnPayService-->>VNPAYSystem: return true
+            VnPayService-->>VNPAYSystem: trả về true
         end
     end
 
-    VnPayService-->>VNPAYSystem: return false
+    VnPayService-->>VNPAYSystem: trả về false
     deactivate VnPayService
 ```

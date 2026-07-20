@@ -1,8 +1,8 @@
 # Sequence Diagrams for Coupon Service
 
-This document contains the sequence diagrams for all major operations within `CouponServiceImpl`.
+Tài liệu này chứa các sơ đồ tuần tự cho tất cả các hoạt động chính trong `CouponServiceImpl`.
 
-## 1. Create Coupon (`createCoupon`)
+## 1. Tạo Coupon (`createCoupon`)
 
 ```mermaid
 sequenceDiagram
@@ -14,19 +14,19 @@ sequenceDiagram
     Client->>CouponService: createCoupon(request)
     activate CouponService
 
-    CouponService->>CouponService: normalize code
+    CouponService->>CouponService: chuẩn hóa code
 
     CouponService->>CouponRepository: existsByCode(normalizedCode)
     activate CouponRepository
-    alt Code exists
+    alt Code đã tồn tại
         CouponRepository-->>CouponService: true
         CouponService-->>Client: throw AppException(COUPON_CODE_ALREADY_EXISTS)
-    else Code available
+    else Code khả dụng
         CouponRepository-->>CouponService: false
     end
     deactivate CouponRepository
 
-    alt DiscountType == PERCENTAGE and maxDiscountAmount == null
+    alt DiscountType == PERCENTAGE và maxDiscountAmount == null
         CouponService-->>Client: throw AppException(BUDGET_EXCEEDED)
     end
 
@@ -47,7 +47,7 @@ sequenceDiagram
     deactivate CouponService
 ```
 
-## 2. Update Coupon (`updateCoupon`)
+## 2. Cập nhật Coupon (`updateCoupon`)
 
 ```mermaid
 sequenceDiagram
@@ -61,10 +61,10 @@ sequenceDiagram
 
     CouponService->>CouponRepository: findById(couponId)
     activate CouponRepository
-    CouponRepository-->>CouponService: entity (or throw COUPON_NOT_FOUND)
+    CouponRepository-->>CouponService: entity (hoặc ném ra COUPON_NOT_FOUND)
     deactivate CouponRepository
 
-    CouponService->>CouponService: update fields from request (excluding code)
+    CouponService->>CouponService: cập nhật các trường từ request (ngoại trừ code)
 
     CouponService->>CouponRepository: save(entity)
     activate CouponRepository
@@ -78,7 +78,7 @@ sequenceDiagram
     deactivate CouponService
 ```
 
-## 3. Preview Apply Coupon (`previewApply`)
+## 3. Xem trước áp dụng Coupon (`previewApply`)
 
 ```mermaid
 sequenceDiagram
@@ -94,20 +94,20 @@ sequenceDiagram
 
     CouponService->>UserRepository: findByEmail(userEmail)
     activate UserRepository
-    UserRepository-->>CouponService: UserEntity (or throw USER_NOT_FOUND)
+    UserRepository-->>CouponService: UserEntity (hoặc ném ra USER_NOT_FOUND)
     deactivate UserRepository
 
-    %% Validate Coupon sub-process
+    %% Tiến trình con xác thực Coupon
     CouponService->>CouponService: validateCoupon(couponCode, orderAmount, user)
     activate CouponService
     CouponService->>CouponRepository: findByCode(couponCode)
-    CouponRepository-->>CouponService: CouponEntity (or throw COUPON_NOT_FOUND)
+    CouponRepository-->>CouponService: CouponEntity (hoặc ném ra COUPON_NOT_FOUND)
     
-    alt is not active
+    alt không hoạt động
         CouponService-->>Client: throw AppException(COUPON_NOT_FOUND)
     end
     
-    alt current time out of range
+    alt thời gian hiện tại ngoài phạm vi
         CouponService-->>Client: throw AppException(COUPON_EXPIRED)
     end
 
@@ -128,7 +128,7 @@ sequenceDiagram
     end
     deactivate CouponService
 
-    %% Calculate Discount sub-process
+    %% Tiến trình con tính toán giảm giá
     CouponService->>CouponService: calculateDiscount(coupon, orderAmount)
     activate CouponService
     alt type == PERCENTAGE
@@ -145,7 +145,7 @@ sequenceDiagram
     deactivate CouponService
 ```
 
-## 4. Get Available Coupons (`getAvailableCoupons`)
+## 4. Lấy các Coupon khả dụng (`getAvailableCoupons`)
 
 ```mermaid
 sequenceDiagram
@@ -162,7 +162,7 @@ sequenceDiagram
     CouponRepository-->>CouponService: List<CouponEntity>
     deactivate CouponRepository
 
-    loop For each entity
+    loop Đối với mỗi entity
         CouponService->>CouponMapper: toResponse(entity)
         CouponMapper-->>CouponService: CouponResponse
     end

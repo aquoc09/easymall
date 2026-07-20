@@ -1,8 +1,8 @@
 # Sequence Diagrams for Category Service
 
-This document contains the sequence diagrams for all operations within `CategoryServiceImpl`.
+Tài liệu này chứa các sơ đồ tuần tự cho tất cả các hoạt động trong `CategoryServiceImpl`.
 
-## 1. Get Category Tree (`getCategoryTree`)
+## 1. Lấy Cây Danh mục (`getCategoryTree`)
 
 ```mermaid
 sequenceDiagram
@@ -24,20 +24,20 @@ sequenceDiagram
     CategoryRepository-->>CategoryService: List<CategoryEntity>
     deactivate CategoryRepository
 
-    loop For each entity
+    loop Đối với mỗi entity
         CategoryService->>CategoryMapper: toResponse(entity)
         activate CategoryMapper
         CategoryMapper-->>CategoryService: CategoryResponse
         deactivate CategoryMapper
     end
     
-    CategoryService->>CategoryService: Build tree hierarchy (assign children to parent responses)
+    CategoryService->>CategoryService: Xây dựng cấu trúc cây (gán children cho parent responses)
 
-    CategoryService-->>Client: List<CategoryResponse> (root categories)
+    CategoryService-->>Client: List<CategoryResponse> (các danh mục gốc)
     deactivate CategoryService
 ```
 
-## 2. Create Category (`createCategory`)
+## 2. Tạo Danh mục (`createCategory`)
 
 ```mermaid
 sequenceDiagram
@@ -53,10 +53,10 @@ sequenceDiagram
     
     CategoryService->>CategoryRepository: existsByCategoryCode(categoryCode)
     activate CategoryRepository
-    alt Code exists
+    alt Code đã tồn tại
         CategoryRepository-->>CategoryService: true
         CategoryService-->>Client: throw AppException(CATEGORY_CODE_ALREADY_EXISTS)
-    else Code available
+    else Code khả dụng
         CategoryRepository-->>CategoryService: false
     end
     deactivate CategoryRepository
@@ -67,10 +67,10 @@ sequenceDiagram
     alt request.parentId != null
         CategoryService->>CategoryRepository: findById(request.parentId)
         activate CategoryRepository
-        CategoryRepository-->>CategoryService: parentEntity (or throw PARENT_CATEGORY_NOT_FOUND)
+        CategoryRepository-->>CategoryService: parentEntity (hoặc ném ra PARENT_CATEGORY_NOT_FOUND)
         deactivate CategoryRepository
         
-        CategoryService->>CategoryService: calculate newLevel = parent.level + 1
+        CategoryService->>CategoryService: tính toán newLevel = parent.level + 1
         alt newLevel > 3
             CategoryService-->>Client: throw AppException(MAX_LEVEL_EXCEEDED)
         end
@@ -93,7 +93,7 @@ sequenceDiagram
     deactivate CategoryService
 ```
 
-## 3. Update Category (`updateCategory`)
+## 3. Cập nhật Danh mục (`updateCategory`)
 
 ```mermaid
 sequenceDiagram
@@ -107,19 +107,19 @@ sequenceDiagram
 
     CategoryService->>CategoryRepository: findById(categoryId)
     activate CategoryRepository
-    CategoryRepository-->>CategoryService: entity (or throw CATEGORY_NOT_FOUND)
+    CategoryRepository-->>CategoryService: entity (hoặc ném ra CATEGORY_NOT_FOUND)
     deactivate CategoryRepository
     
-    CategoryService->>CategoryService: calculate wasActive & isNowHidden
+    CategoryService->>CategoryService: tính toán wasActive & isNowHidden
     CategoryService->>CategoryService: toSlug(request.categoryName)
     
     alt newCode != entity.code
         CategoryService->>CategoryRepository: existsByCategoryCode(newCode)
         activate CategoryRepository
-        alt Code exists
+        alt Code đã tồn tại
             CategoryRepository-->>CategoryService: true
             CategoryService-->>Client: throw AppException(CATEGORY_CODE_ALREADY_EXISTS)
-        else Code available
+        else Code khả dụng
             CategoryRepository-->>CategoryService: false
         end
         deactivate CategoryRepository
@@ -133,7 +133,7 @@ sequenceDiagram
     CategoryRepository-->>CategoryService: savedEntity
     deactivate CategoryRepository
 
-    alt wasActive == true AND isNowHidden == true
+    alt wasActive == true VÀ isNowHidden == true
         CategoryService->>CategoryService: cascadeHideChildren(categoryId)
         activate CategoryService
         CategoryService->>CategoryRepository: findAllByOrderByLevelAscDisplayOrderAsc()
@@ -150,7 +150,7 @@ sequenceDiagram
     deactivate CategoryService
 ```
 
-## 4. Delete Category (`deleteCategory`)
+## 4. Xóa Danh mục (`deleteCategory`)
 
 ```mermaid
 sequenceDiagram
@@ -164,7 +164,7 @@ sequenceDiagram
 
     CategoryService->>CategoryRepository: findById(categoryId)
     activate CategoryRepository
-    CategoryRepository-->>CategoryService: entity (or throw CATEGORY_NOT_FOUND)
+    CategoryRepository-->>CategoryService: entity (hoặc ném ra CATEGORY_NOT_FOUND)
     deactivate CategoryRepository
 
     CategoryService->>CategoryRepository: countByParentId(categoryId)

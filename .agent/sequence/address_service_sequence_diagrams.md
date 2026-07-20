@@ -1,8 +1,8 @@
 # Sequence Diagrams for Address Service
 
-This document contains the sequence diagrams for all operations within `AddressServiceImpl`.
+Tài liệu này chứa các sơ đồ tuần tự cho tất cả các hoạt động trong `AddressServiceImpl`.
 
-## 1. Get My Addresses (`getMyAddresses`)
+## 1. Lấy Địa chỉ của tôi (`getMyAddresses`)
 
 ```mermaid
 sequenceDiagram
@@ -17,10 +17,10 @@ sequenceDiagram
     
     AddressService->>UserRepository: findByEmail(userEmail)
     activate UserRepository
-    alt User not found
+    alt Không tìm thấy người dùng
         UserRepository-->>AddressService: Optional.empty()
         AddressService-->>Client: throw AppException(USER_NOT_FOUND)
-    else User found
+    else Tìm thấy người dùng
         UserRepository-->>AddressService: Optional<UserEntity>
     end
     deactivate UserRepository
@@ -30,7 +30,7 @@ sequenceDiagram
     AddressRepository-->>AddressService: List<AddressEntity>
     deactivate AddressRepository
 
-    loop For each AddressEntity
+    loop Đối với mỗi AddressEntity
         AddressService->>AddressService: toResponse(entity)
         activate AddressService
         AddressService->>GhnMasterDataService: getProvinces()
@@ -47,7 +47,7 @@ sequenceDiagram
     deactivate AddressService
 ```
 
-## 2. Create Address (`createAddress`)
+## 2. Tạo Địa chỉ (`createAddress`)
 
 ```mermaid
 sequenceDiagram
@@ -105,7 +105,7 @@ sequenceDiagram
     deactivate AddressService
 ```
 
-## 3. Update Address (`updateAddress`)
+## 3. Cập nhật Địa chỉ (`updateAddress`)
 
 ```mermaid
 sequenceDiagram
@@ -126,7 +126,7 @@ sequenceDiagram
     AddressRepository-->>AddressService: AddressEntity
     deactivate AddressService
 
-    AddressService->>AddressService: update fields from request
+    AddressService->>AddressService: cập nhật các trường từ request
 
     AddressService->>GhnMasterDataService: getProvinces(), getDistricts(), getWards()
     GhnMasterDataService-->>AddressService: names
@@ -149,7 +149,7 @@ sequenceDiagram
     deactivate AddressService
 ```
 
-## 4. Delete Address (`deleteAddress`)
+## 4. Xóa Địa chỉ (`deleteAddress`)
 
 ```mermaid
 sequenceDiagram
@@ -178,7 +178,7 @@ sequenceDiagram
     deactivate AddressService
 ```
 
-## 5. Set Default (`setDefault`)
+## 5. Đặt làm Mặc định (`setDefault`)
 
 ```mermaid
 sequenceDiagram

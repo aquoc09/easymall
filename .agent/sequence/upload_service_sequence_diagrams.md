@@ -1,10 +1,10 @@
 # Sequence Diagrams for Upload Service
 
-This document contains the sequence diagrams for operations within `S3StorageServiceImpl` and `TempUploadCleanupService`.
+Tài liệu này chứa các sơ đồ tuần tự cho các hoạt động trong `S3StorageServiceImpl` và `TempUploadCleanupService`.
 
-## 1. Upload Image (`uploadImage`)
+## 1. Tải ảnh lên (`uploadImage`)
 
-This flow handles uploading an image file to Amazon S3 and recording it in a temporary database table to prevent "orphan" files.
+Luồng này xử lý việc tải một tệp hình ảnh lên Amazon S3 và ghi nhận nó vào một bảng cơ sở dữ liệu tạm thời để ngăn chặn các tệp "mồ côi".
 
 ```mermaid
 sequenceDiagram
@@ -17,8 +17,8 @@ sequenceDiagram
     activate StorageService
 
     StorageService->>StorageService: validateFile(file)
-    alt is empty, invalid type, or too large
-        StorageService-->>Client: throw AppException
+    alt trống, loại không hợp lệ hoặc quá lớn
+        StorageService-->>Client: ném ra AppException
     end
 
     StorageService->>StorageService: buildS3Key(folder, originalFilename)
@@ -40,9 +40,9 @@ sequenceDiagram
     deactivate StorageService
 ```
 
-## 2. Delete File by URL (`deleteByUrl`)
+## 2. Xóa tệp theo URL (`deleteByUrl`)
 
-This flow deletes a physical file directly from Amazon S3 using its public URL.
+Luồng này xóa một tệp vật lý trực tiếp từ Amazon S3 bằng URL công khai của nó.
 
 ```mermaid
 sequenceDiagram
@@ -64,9 +64,9 @@ sequenceDiagram
     deactivate StorageService
 ```
 
-## 3. Temporary Upload Cleanup Cron Job (`cleanupOrphanUploads`)
+## 3. Cron Job dọn dẹp các tệp tải lên tạm thời (`cleanupOrphanUploads`)
 
-This flow is a background scheduled task (Cron Job). It scans the `temp_uploads` table for images that were uploaded but never linked to any business entity (e.g. User didn't click "Save" after uploading) and deletes them to save storage space.
+Luồng này là một tác vụ chạy ngầm theo lịch (Cron Job). Nó quét bảng `temp_uploads` để tìm các hình ảnh đã được tải lên nhưng chưa bao giờ được liên kết với bất kỳ thực thể nghiệp vụ nào (ví dụ: Người dùng không nhấp vào "Lưu" sau khi tải lên) và xóa chúng để tiết kiệm không gian lưu trữ.
 
 ```mermaid
 sequenceDiagram
@@ -76,27 +76,27 @@ sequenceDiagram
     participant StorageService
     participant Logger
 
-    SpringScheduler->>TempUploadCleanupService: Trigger @Scheduled(cron)
+    SpringScheduler->>TempUploadCleanupService: Kích hoạt @Scheduled(cron)
     activate TempUploadCleanupService
 
     TempUploadCleanupService->>TempUploadCleanupService: threshold = now() - CLEANUP_THRESHOLD_HOURS
 
     TempUploadCleanupService->>TempUploadRepository: findAllByCreatedAtBefore(threshold)
     activate TempUploadRepository
-    TempUploadRepository-->>TempUploadCleanupService: List<TempUploadEntity> (orphans)
+    TempUploadRepository-->>TempUploadCleanupService: List<TempUploadEntity> (tệp mồ côi)
     deactivate TempUploadRepository
 
-    alt orphans is empty
-        TempUploadCleanupService-->>SpringScheduler: return
+    alt tệp mồ côi trống
+        TempUploadCleanupService-->>SpringScheduler: trả về
     end
 
-    loop For each orphan
-        alt Try Block (Success)
+    loop Đối với mỗi tệp mồ côi
+        alt Khối Try (Thành công)
             TempUploadCleanupService->>StorageService: deleteByUrl(orphan.url)
             TempUploadCleanupService->>TempUploadRepository: delete(orphan)
-        else Catch Exception
+        else Bắt ngoại lệ
             TempUploadCleanupService->>Logger: log.error()
-            Note right of Logger: Exception is swallowed,<br>continues to next orphan.
+            Note right of Logger: Ngoại lệ bị bỏ qua,<br>tiếp tục với tệp mồ côi tiếp theo.
         end
     end
 

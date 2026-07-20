@@ -1,8 +1,8 @@
 # Sequence Diagrams for Contact Message Service
 
-This document contains the sequence diagrams for all operations within `ContactMessageServiceImpl`.
+Tài liệu này chứa các sơ đồ tuần tự cho tất cả các hoạt động trong `ContactMessageServiceImpl`.
 
-## 1. Create Message (`createMessage`)
+## 1. Tạo tin nhắn (`createMessage`)
 
 ```mermaid
 sequenceDiagram
@@ -15,18 +15,18 @@ sequenceDiagram
     Client->>ContactMessageService: createMessage(request, userEmail)
     activate ContactMessageService
 
-    alt userEmail is not empty (Logged in user)
+    alt userEmail không rỗng (Người dùng đã đăng nhập)
         ContactMessageService->>UserRepository: findByEmail(userEmail)
         activate UserRepository
-        UserRepository-->>ContactMessageService: UserEntity (or throw USER_NOT_FOUND)
+        UserRepository-->>ContactMessageService: UserEntity (hoặc ném ra USER_NOT_FOUND)
         deactivate UserRepository
-    else userEmail is empty (Guest user)
-        alt guestName or guestEmail is missing
-            ContactMessageService-->>Client: throw IllegalArgumentException
+    else userEmail rỗng (Người dùng khách)
+        alt thiếu guestName hoặc guestEmail
+            ContactMessageService-->>Client: ném ra IllegalArgumentException
         end
     end
 
-    ContactMessageService->>ContactMessageService: Build ContactMessageEntity (status="PENDING")
+    ContactMessageService->>ContactMessageService: Xây dựng ContactMessageEntity (status="PENDING")
 
     ContactMessageService->>ContactMessageRepository: save(entity)
     activate ContactMessageRepository
@@ -42,7 +42,7 @@ sequenceDiagram
     deactivate ContactMessageService
 ```
 
-## 2. Get My Messages (`getMyMessages`)
+## 2. Lấy tin nhắn của tôi (`getMyMessages`)
 
 ```mermaid
 sequenceDiagram
@@ -57,7 +57,7 @@ sequenceDiagram
 
     ContactMessageService->>UserRepository: findByEmail(userEmail)
     activate UserRepository
-    UserRepository-->>ContactMessageService: UserEntity (or throw USER_NOT_FOUND)
+    UserRepository-->>ContactMessageService: UserEntity (hoặc ném ra USER_NOT_FOUND)
     deactivate UserRepository
 
     ContactMessageService->>ContactMessageRepository: findByUser_UserId(userId, pageable)
@@ -65,7 +65,7 @@ sequenceDiagram
     ContactMessageRepository-->>ContactMessageService: Page<ContactMessageEntity>
     deactivate ContactMessageRepository
 
-    loop For each entity in Page
+    loop Đối với mỗi entity trong Page
         ContactMessageService->>ContactMessageMapper: toResponse(entity)
         activate ContactMessageMapper
         ContactMessageMapper-->>ContactMessageService: ContactMessageResponse
@@ -76,7 +76,7 @@ sequenceDiagram
     deactivate ContactMessageService
 ```
 
-## 3. Get Admin Messages (`getAdminMessages`)
+## 3. Lấy tin nhắn của Admin (`getAdminMessages`)
 
 ```mermaid
 sequenceDiagram
@@ -88,9 +88,9 @@ sequenceDiagram
     Client->>ContactMessageService: getAdminMessages(status, pageable)
     activate ContactMessageService
 
-    alt status is provided
+    alt status được cung cấp
         ContactMessageService->>ContactMessageRepository: findByStatus(status, pageable)
-    else status is null or empty
+    else status là null hoặc rỗng
         ContactMessageService->>ContactMessageRepository: findAll(pageable)
     end
     
@@ -98,7 +98,7 @@ sequenceDiagram
     ContactMessageRepository-->>ContactMessageService: Page<ContactMessageEntity>
     deactivate ContactMessageRepository
 
-    loop For each entity in Page
+    loop Đối với mỗi entity trong Page
         ContactMessageService->>ContactMessageMapper: toResponse(entity)
         activate ContactMessageMapper
         ContactMessageMapper-->>ContactMessageService: ContactMessageResponse
@@ -109,7 +109,7 @@ sequenceDiagram
     deactivate ContactMessageService
 ```
 
-## 4. Update Status (`updateStatus`)
+## 4. Cập nhật trạng thái (`updateStatus`)
 
 ```mermaid
 sequenceDiagram
@@ -123,7 +123,7 @@ sequenceDiagram
 
     ContactMessageService->>ContactMessageRepository: findById(messageId)
     activate ContactMessageRepository
-    ContactMessageRepository-->>ContactMessageService: entity (or throw RESOURCE_NOT_FOUND)
+    ContactMessageRepository-->>ContactMessageService: entity (hoặc ném ra RESOURCE_NOT_FOUND)
     deactivate ContactMessageRepository
 
     alt entity.status != "PENDING"

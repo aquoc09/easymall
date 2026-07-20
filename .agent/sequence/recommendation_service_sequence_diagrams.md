@@ -1,8 +1,8 @@
 # Sequence Diagrams for Recommendation Service
 
-This document contains the sequence diagrams for operations within `RecommendationServiceImpl`.
+Tài liệu này chứa các sơ đồ tuần tự cho các hoạt động trong `RecommendationServiceImpl`.
 
-## 1. Get Personalized Recommendations (`getPersonalizedRecommendations`)
+## 1. Lấy đề xuất được cá nhân hóa (`getPersonalizedRecommendations`)
 
 ```mermaid
 sequenceDiagram
@@ -15,30 +15,30 @@ sequenceDiagram
     Client->>RecommendationService: getPersonalizedRecommendations(userId, limit)
     activate RecommendationService
 
-    alt userId is null
+    alt userId là null
         RecommendationService->>RecommendationService: getFallbackTrendingProducts()
         activate RecommendationService
         RecommendationService->>ProductRepository: findTop10ByInStockTrueOrderBySoldCountDesc()
         activate ProductRepository
-        ProductRepository-->>RecommendationService: List<ProductEntity> (Trending Products)
+        ProductRepository-->>RecommendationService: List<ProductEntity> (Sản phẩm thịnh hành)
         deactivate ProductRepository
         deactivate RecommendationService
-    else userId is not null
+    else userId khác null
         RecommendationService->>UserRecommendationRepository: findTopRecommendationsForUser(userId, limit)
         activate UserRecommendationRepository
         UserRecommendationRepository-->>RecommendationService: List<UserRecommendationEntity>
         deactivate UserRecommendationRepository
 
-        alt recommendations is empty
+        alt danh sách đề xuất trống
             RecommendationService->>RecommendationService: getFallbackTrendingProducts()
             activate RecommendationService
             RecommendationService->>ProductRepository: findTop10ByInStockTrueOrderBySoldCountDesc()
             activate ProductRepository
-            ProductRepository-->>RecommendationService: List<ProductEntity> (Trending Products)
+            ProductRepository-->>RecommendationService: List<ProductEntity> (Sản phẩm thịnh hành)
             deactivate ProductRepository
             deactivate RecommendationService
-        else recommendations is not empty
-            RecommendationService->>RecommendationService: Map to ProductEntity and filter (inStock == true)
+        else danh sách đề xuất không trống
+            RecommendationService->>RecommendationService: Ánh xạ thành ProductEntity và lọc (inStock == true)
         end
     end
 
@@ -49,7 +49,7 @@ sequenceDiagram
     deactivate RecommendationService
 ```
 
-## 2. Get Similar Products (`getSimilarProducts`)
+## 2. Lấy các sản phẩm tương tự (`getSimilarProducts`)
 
 ```mermaid
 sequenceDiagram
@@ -66,7 +66,7 @@ sequenceDiagram
     ProductSimilarityRepository-->>RecommendationService: List<ProductSimilarityEntity>
     deactivate ProductSimilarityRepository
 
-    RecommendationService->>RecommendationService: Map to Similar ProductEntity and filter (inStock == true)
+    RecommendationService->>RecommendationService: Ánh xạ thành Similar ProductEntity và lọc (inStock == true)
 
     RecommendationService->>ProductMapper: toResponse()
     ProductMapper-->>RecommendationService: List<ProductResponse>
@@ -75,7 +75,7 @@ sequenceDiagram
     deactivate RecommendationService
 ```
 
-## 3. Get Bought Together Products (`getBoughtTogetherProducts`)
+## 3. Lấy các sản phẩm được mua cùng nhau (`getBoughtTogetherProducts`)
 
 ```mermaid
 sequenceDiagram
@@ -92,7 +92,7 @@ sequenceDiagram
     ProductAssociationRepository-->>RecommendationService: List<ProductAssociationEntity>
     deactivate ProductAssociationRepository
 
-    RecommendationService->>RecommendationService: Map to Related ProductEntity and filter (inStock == true)
+    RecommendationService->>RecommendationService: Ánh xạ thành Related ProductEntity và lọc (inStock == true)
 
     RecommendationService->>ProductMapper: toResponse()
     ProductMapper-->>RecommendationService: List<ProductResponse>

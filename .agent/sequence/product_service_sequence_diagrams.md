@@ -1,8 +1,8 @@
 # Sequence Diagrams for Product Service
 
-This document contains the sequence diagrams for operations within `ProductServiceImpl`.
+Tài liệu này chứa các sơ đồ tuần tự cho các hoạt động trong `ProductServiceImpl`.
 
-## 1. Create Product (`createProduct`)
+## 1. Tạo sản phẩm (`createProduct`)
 
 ```mermaid
 sequenceDiagram
@@ -20,7 +20,7 @@ sequenceDiagram
         activate CategoryRepository
         CategoryRepository-->>ProductService: boolean
         deactivate CategoryRepository
-        alt not exists
+        alt không tồn tại
             ProductService-->>Client: throw AppException(CATEGORY_NOT_FOUND_FOR_PRODUCT)
         end
     end
@@ -48,7 +48,7 @@ sequenceDiagram
     deactivate ProductService
 ```
 
-## 2. Update Product (`updateProduct`)
+## 2. Cập nhật sản phẩm (`updateProduct`)
 
 ```mermaid
 sequenceDiagram
@@ -63,7 +63,7 @@ sequenceDiagram
 
     ProductService->>ProductRepository: findById(productId)
     activate ProductRepository
-    ProductRepository-->>ProductService: ProductEntity (or throw NOT_FOUND)
+    ProductRepository-->>ProductService: ProductEntity (hoặc ném ra NOT_FOUND)
     deactivate ProductRepository
 
     alt request.categoryId != null
@@ -71,14 +71,14 @@ sequenceDiagram
         activate CategoryRepository
         CategoryRepository-->>ProductService: boolean
         deactivate CategoryRepository
-        alt not exists
+        alt không tồn tại
             ProductService-->>Client: throw AppException(CATEGORY_NOT_FOUND_FOR_PRODUCT)
         end
     end
 
     ProductService->>ProductMapper: updateEntityFromRequest()
 
-    ProductService->>ProductService: buildAndSaveVariants() (Update, Create, Remove)
+    ProductService->>ProductService: buildAndSaveVariants() (Cập nhật, Tạo mới, Xóa)
     
     alt request.images != null
         ProductService->>ProductService: product.getImages().clear()
@@ -100,9 +100,9 @@ sequenceDiagram
     deactivate ProductService
 ```
 
-## 3. Get Products (Admin & Public)
+## 3. Lấy sản phẩm (Admin & Public)
 
-Applies to both `getAllProducts` (Admin) and `getPublicProducts` (Public).
+Áp dụng cho cả `getAllProducts` (Admin) và `getPublicProducts` (Public).
 
 ```mermaid
 sequenceDiagram
@@ -121,14 +121,14 @@ sequenceDiagram
         ProductService->>ProductService: spec = isInStock(true)
     end
     
-    alt filter has categoryCode
+    alt filter có categoryCode
         ProductService->>CategoryRepository: findByCategoryCode(code)
         CategoryRepository-->>ProductService: CategoryEntity
-        ProductService->>ProductService: collectAllDescendantCategoryIds (recursive)
+        ProductService->>ProductService: thu thập tất cả DescendantCategoryIds (đệ quy)
         ProductService->>ProductService: spec.and(hasCategory(ids))
     end
     
-    ProductService->>ProductService: Append other filters (Price, Keyword, Rating, etc.)
+    ProductService->>ProductService: Thêm các bộ lọc khác (Giá, Từ khóa, Đánh giá, v.v.)
     deactivate ProductService
 
     ProductService->>ProductService: applyCollectionSorting(collection, pageable)
@@ -138,13 +138,13 @@ sequenceDiagram
     ProductRepository-->>ProductService: Page<ProductEntity>
     deactivate ProductRepository
 
-    ProductService->>ProductService: Map to Page<ProductResponse>
+    ProductService->>ProductService: Ánh xạ thành Page<ProductResponse>
     
     ProductService-->>Client: Page<ProductResponse>
     deactivate ProductService
 ```
 
-## 4. Delete Product (`deleteProduct`)
+## 4. Xóa sản phẩm (`deleteProduct`)
 
 ```mermaid
 sequenceDiagram
@@ -159,12 +159,12 @@ sequenceDiagram
 
     ProductService->>ProductRepository: findById(productId)
     activate ProductRepository
-    ProductRepository-->>ProductService: ProductEntity (or throw NOT_FOUND)
+    ProductRepository-->>ProductService: ProductEntity (hoặc ném ra NOT_FOUND)
     deactivate ProductRepository
 
-    ProductService->>ProductService: Get list of variantIds
+    ProductService->>ProductService: Lấy danh sách variantIds
     
-    alt variantIds is not empty
+    alt variantIds không rỗng
         ProductService->>OrderDetailRepository: nullifyVariantReferences(variantIds)
         ProductService->>CartItemRepository: deleteByVariant_VariantIdIn(variantIds)
     end

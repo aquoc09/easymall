@@ -1,8 +1,8 @@
 # Sequence Diagrams for Review Service
 
-This document contains the sequence diagrams for operations within `ReviewServiceImpl`.
+Tài liệu này chứa các sơ đồ tuần tự cho các hoạt động trong `ReviewServiceImpl`.
 
-## 1. Create Review (`createReview`)
+## 1. Tạo Đánh giá (`createReview`)
 
 ```mermaid
 sequenceDiagram
@@ -19,17 +19,17 @@ sequenceDiagram
 
     ReviewService->>UserRepository: findByEmail(userEmail)
     activate UserRepository
-    UserRepository-->>ReviewService: UserEntity (or throw NOT_FOUND)
+    UserRepository-->>ReviewService: UserEntity (hoặc ném ra NOT_FOUND)
     deactivate UserRepository
 
     ReviewService->>ProductRepository: findById(productId)
     activate ProductRepository
-    ProductRepository-->>ReviewService: ProductEntity (or throw NOT_FOUND)
+    ProductRepository-->>ReviewService: ProductEntity (hoặc ném ra NOT_FOUND)
     deactivate ProductRepository
 
     ReviewService->>OrderRepository: findById(orderId)
     activate OrderRepository
-    OrderRepository-->>ReviewService: OrderEntity (or throw NOT_FOUND)
+    OrderRepository-->>ReviewService: OrderEntity (hoặc ném ra NOT_FOUND)
     deactivate OrderRepository
 
     alt order.user.id != user.id
@@ -51,8 +51,8 @@ sequenceDiagram
 
     ReviewService->>ReviewService: Build ReviewEntity (Status: PENDING)
 
-    alt request has imageUrls
-        loop For each imageUrl
+    alt request có imageUrls
+        loop Đối với mỗi imageUrl
             ReviewService->>ReviewService: Build ReviewImageEntity
             ReviewService->>TempUploadRepository: deleteByUrl(url)
         end
@@ -69,7 +69,7 @@ sequenceDiagram
     deactivate ReviewService
 ```
 
-## 2. Get Product Reviews (`getProductReviews`)
+## 2. Lấy Đánh giá Sản phẩm (`getProductReviews`)
 
 ```mermaid
 sequenceDiagram
@@ -85,13 +85,13 @@ sequenceDiagram
     ReviewRepository-->>ReviewService: Page<ReviewEntity>
     deactivate ReviewRepository
 
-    ReviewService->>ReviewService: Map to Page<ReviewResponse>
+    ReviewService->>ReviewService: Ánh xạ thành Page<ReviewResponse>
     
     ReviewService-->>Client: Page<ReviewResponse>
     deactivate ReviewService
 ```
 
-## 3. Get Product Review Summary (`getProductReviewSummary`)
+## 3. Lấy Tóm tắt Đánh giá Sản phẩm (`getProductReviewSummary`)
 
 ```mermaid
 sequenceDiagram
@@ -112,14 +112,14 @@ sequenceDiagram
     ReviewRepository-->>ReviewService: Double averageRating
     deactivate ReviewRepository
 
-    ReviewService->>ReviewService: Initialize breakdown map (1 to 5 stars = 0)
+    ReviewService->>ReviewService: Khởi tạo breakdown map (1 đến 5 sao = 0)
 
     ReviewService->>ReviewRepository: countByRatingForProduct(productId)
     activate ReviewRepository
-    ReviewRepository-->>ReviewService: List<Object[]> (Rating counts)
+    ReviewRepository-->>ReviewService: List<Object[]> (Số lượng đánh giá)
     deactivate ReviewRepository
 
-    ReviewService->>ReviewService: Populate breakdown map with results
+    ReviewService->>ReviewService: Điền kết quả vào breakdown map
 
     ReviewService->>ReviewService: Build ReviewSummaryResponse
     
@@ -127,7 +127,7 @@ sequenceDiagram
     deactivate ReviewService
 ```
 
-## 4. Get My Reviews (`getMyReviews`)
+## 4. Lấy Đánh giá của tôi (`getMyReviews`)
 
 ```mermaid
 sequenceDiagram
@@ -141,7 +141,7 @@ sequenceDiagram
 
     ReviewService->>UserRepository: findByEmail(userEmail)
     activate UserRepository
-    UserRepository-->>ReviewService: UserEntity (or throw NOT_FOUND)
+    UserRepository-->>ReviewService: UserEntity (hoặc ném ra NOT_FOUND)
     deactivate UserRepository
 
     ReviewService->>ReviewRepository: findByUser_UserId(userId, pageable)
@@ -149,13 +149,13 @@ sequenceDiagram
     ReviewRepository-->>ReviewService: Page<ReviewEntity>
     deactivate ReviewRepository
 
-    ReviewService->>ReviewService: Map to Page<ReviewResponse>
+    ReviewService->>ReviewService: Ánh xạ thành Page<ReviewResponse>
     
     ReviewService-->>Client: Page<ReviewResponse>
     deactivate ReviewService
 ```
 
-## 5. Update Review Status - Admin (`updateReviewStatus`)
+## 5. Cập nhật Trạng thái Đánh giá - Admin (`updateReviewStatus`)
 
 ```mermaid
 sequenceDiagram
@@ -168,10 +168,10 @@ sequenceDiagram
 
     ReviewService->>ReviewRepository: findById(reviewId)
     activate ReviewRepository
-    ReviewRepository-->>ReviewService: ReviewEntity (or throw NOT_FOUND)
+    ReviewRepository-->>ReviewService: ReviewEntity (hoặc ném ra NOT_FOUND)
     deactivate ReviewRepository
 
-    ReviewService->>ReviewService: Set status = request.status
+    ReviewService->>ReviewService: Đặt trạng thái = request.status
 
     ReviewService->>ReviewRepository: save(review)
     activate ReviewRepository
@@ -184,7 +184,7 @@ sequenceDiagram
     deactivate ReviewService
 ```
 
-## 6. Delete Review (`deleteReview`)
+## 6. Xóa Đánh giá (`deleteReview`)
 
 ```mermaid
 sequenceDiagram
@@ -198,12 +198,12 @@ sequenceDiagram
 
     ReviewService->>ReviewRepository: findById(reviewId)
     activate ReviewRepository
-    ReviewRepository-->>ReviewService: ReviewEntity (or throw NOT_FOUND)
+    ReviewRepository-->>ReviewService: ReviewEntity (hoặc ném ra NOT_FOUND)
     deactivate ReviewRepository
 
     ReviewService->>UserRepository: findByEmail(userEmail)
     activate UserRepository
-    UserRepository-->>ReviewService: UserEntity (or throw NOT_FOUND)
+    UserRepository-->>ReviewService: UserEntity (hoặc ném ra NOT_FOUND)
     deactivate UserRepository
 
     alt review.user.id != user.id

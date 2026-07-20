@@ -1,8 +1,8 @@
 # Sequence Diagrams for Email Service
 
-This document contains the sequence diagrams for operations within `EmailServiceImpl`.
+Tài liệu này chứa các sơ đồ tuần tự cho các hoạt động trong `EmailServiceImpl`.
 
-## 1. Send OTP Email (`sendOtpEmail`)
+## 1. Gửi OTP Email (`sendOtpEmail`)
 
 ```mermaid
 sequenceDiagram

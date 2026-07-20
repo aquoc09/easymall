@@ -1,12 +1,12 @@
 # Sequence Diagrams for Auth Services
 
-This document contains sequence diagrams for the authentication and authorization services, including `AuthenticationServiceImpl`, `PasswordResetServiceImpl`, `RegistrationServiceImpl`, and `TokenServiceImpl`.
+Tài liệu này chứa sơ đồ tuần tự cho các dịch vụ xác thực và ủy quyền, bao gồm `AuthenticationServiceImpl`, `PasswordResetServiceImpl`, `RegistrationServiceImpl`, và `TokenServiceImpl`.
 
 ---
 
 ## 1. AuthenticationServiceImpl
 
-### 1.1. Login (`login`)
+### 1.1. Đăng nhập (`login`)
 
 ```mermaid
 sequenceDiagram
@@ -21,24 +21,24 @@ sequenceDiagram
 
     AuthenticationService->>UserRepository: findByEmail(request.email)
     activate UserRepository
-    alt User not found
+    alt Không tìm thấy người dùng
         UserRepository-->>AuthenticationService: Optional.empty()
         AuthenticationService-->>Client: throw AppException(USER_NOT_FOUND)
-    else User found
+    else Tìm thấy người dùng
         UserRepository-->>AuthenticationService: Optional<UserEntity>
     end
     deactivate UserRepository
 
-    alt User is inactive
+    alt Người dùng không hoạt động
         AuthenticationService-->>Client: throw AppException(ACCOUNT_NOT_ACTIVE)
     end
 
     AuthenticationService->>PasswordEncoder: matches(request.password, user.password)
     activate PasswordEncoder
-    alt Passwords do not match
+    alt Mật khẩu không khớp
         PasswordEncoder-->>AuthenticationService: false
         AuthenticationService-->>Client: throw AppException(INVALID_CREDENTIALS)
-    else Passwords match
+    else Mật khẩu khớp
         PasswordEncoder-->>AuthenticationService: true
     end
     deactivate PasswordEncoder
@@ -52,7 +52,7 @@ sequenceDiagram
     deactivate AuthenticationService
 ```
 
-### 1.2. Logout (`logout`)
+### 1.2. Đăng xuất (`logout`)
 
 ```mermaid
 sequenceDiagram
@@ -91,7 +91,7 @@ sequenceDiagram
 
 ## 2. PasswordResetServiceImpl
 
-### 2.1. Forgot Password (`forgotPassword`)
+### 2.1. Quên Mật khẩu (`forgotPassword`)
 
 ```mermaid
 sequenceDiagram
@@ -110,10 +110,10 @@ sequenceDiagram
     PasswordResetService->>PasswordResetService: checkOtpRateLimit()
     activate PasswordResetService
     PasswordResetService->>RedisTemplate: hasKey(rateKey)
-    alt Rate limited
+    alt Bị giới hạn tốc độ
         RedisTemplate-->>PasswordResetService: true
         PasswordResetService-->>Client: throw AppException(OTP_ALREADY_SENT)
-    else Allowed
+    else Được phép
         RedisTemplate-->>PasswordResetService: false
     end
     deactivate PasswordResetService
@@ -132,7 +132,7 @@ sequenceDiagram
     deactivate PasswordResetService
 ```
 
-### 2.2. Reset Password (`resetPassword`)
+### 2.2. Đặt lại Mật khẩu (`resetPassword`)
 
 ```mermaid
 sequenceDiagram
@@ -148,7 +148,7 @@ sequenceDiagram
     PasswordResetService->>RedisTemplate: get(otpKey)
     RedisTemplate-->>PasswordResetService: storedOtp
 
-    alt storedOtp is null OR storedOtp != request.otp
+    alt storedOtp là null HOẶC storedOtp != request.otp
         PasswordResetService-->>Client: throw AppException(OTP_INVALID)
     end
 
@@ -170,7 +170,7 @@ sequenceDiagram
 
 ## 3. RegistrationServiceImpl
 
-### 3.1. Register (`register`)
+### 3.1. Đăng ký (`register`)
 
 ```mermaid
 sequenceDiagram
@@ -185,7 +185,7 @@ sequenceDiagram
     activate RegistrationService
 
     RegistrationService->>UserRepository: existsByEmail(request.email)
-    alt Email exists
+    alt Email đã tồn tại
         UserRepository-->>RegistrationService: true
         RegistrationService-->>Client: throw AppException(EMAIL_ALREADY_EXISTS)
     end
@@ -195,7 +195,7 @@ sequenceDiagram
     RegistrationService->>PasswordEncoder: encode(request.password)
     PasswordEncoder-->>RegistrationService: encodedPassword
     
-    RegistrationService->>RegistrationService: build pendingUserMap and serialize to JSON
+    RegistrationService->>RegistrationService: xây dựng pendingUserMap và tuần tự hóa thành JSON
     RegistrationService->>RegistrationService: generateOtp()
 
     RegistrationService->>RedisTemplate: set(pendingUserKey, pendingJson, OTP_TTL)
@@ -208,7 +208,7 @@ sequenceDiagram
     deactivate RegistrationService
 ```
 
-### 3.2. Activate Account (`activateAccount`)
+### 3.2. Kích hoạt Tài khoản (`activateAccount`)
 
 ```mermaid
 sequenceDiagram
@@ -222,23 +222,23 @@ sequenceDiagram
     activate RegistrationService
 
     RegistrationService->>RedisTemplate: get(pendingUserKey)
-    alt No pending user
+    alt Không có người dùng chờ kích hoạt
         RedisTemplate-->>RegistrationService: null
         RegistrationService-->>Client: throw AppException(PENDING_REGISTRATION_NOT_FOUND)
     end
 
     RegistrationService->>RedisTemplate: get(otpKey)
-    alt Invalid OTP
-        RedisTemplate-->>RegistrationService: null or mismatch
+    alt OTP không hợp lệ
+        RedisTemplate-->>RegistrationService: null hoặc không khớp
         RegistrationService-->>Client: throw AppException(OTP_INVALID)
     end
 
-    RegistrationService->>RegistrationService: deserialize pendingJson
+    RegistrationService->>RegistrationService: giải tuần tự hóa pendingJson
     
     RegistrationService->>RoleRepository: findByRoleName("ROLE_USER")
     RoleRepository-->>RegistrationService: RoleEntity
     
-    RegistrationService->>RegistrationService: build UserEntity (isActive=true)
+    RegistrationService->>RegistrationService: xây dựng UserEntity (isActive=true)
     
     RegistrationService->>UserRepository: save(userEntity)
     
@@ -249,7 +249,7 @@ sequenceDiagram
     deactivate RegistrationService
 ```
 
-### 3.3. Resend OTP (`resendOtp`)
+### 3.3. Gửi lại OTP (`resendOtp`)
 
 ```mermaid
 sequenceDiagram
@@ -278,7 +278,7 @@ sequenceDiagram
 
 ## 4. TokenServiceImpl
 
-### 4.1. Generate And Save Tokens (`generateAndSaveTokens`)
+### 4.1. Tạo và Lưu Token (`generateAndSaveTokens`)
 
 ```mermaid
 sequenceDiagram
@@ -302,7 +302,7 @@ sequenceDiagram
     deactivate TokenService
 ```
 
-### 4.2. Refresh (`refresh`)
+### 4.2. Làm mới (`refresh`)
 
 ```mermaid
 sequenceDiagram
@@ -315,20 +315,20 @@ sequenceDiagram
     activate TokenService
 
     TokenService->>JwtUtil: parseToken(request.token)
-    alt Invalid token signature
+    alt Chữ ký token không hợp lệ
         JwtUtil-->>TokenService: Exception
         TokenService-->>Client: throw AppException(REFRESH_TOKEN_INVALID)
     end
 
     TokenService->>TokenRepository: findByRefreshToken(token)
-    alt RT not found
+    alt RT không tìm thấy
         TokenRepository-->>TokenService: Optional.empty()
         TokenService-->>Client: throw AppException(REFRESH_TOKEN_INVALID)
-    else RT found
+    else Tìm thấy RT
         TokenRepository-->>TokenService: TokenEntity
     end
     
-    alt RT expired
+    alt RT đã hết hạn
         TokenService->>TokenRepository: delete(TokenEntity)
         TokenService-->>Client: throw AppException(REFRESH_TOKEN_INVALID)
     end
@@ -341,7 +341,7 @@ sequenceDiagram
     deactivate TokenService
 ```
 
-### 4.3. Introspect (`introspect`)
+### 4.3. Kiểm tra (`introspect`)
 
 ```mermaid
 sequenceDiagram
@@ -353,16 +353,16 @@ sequenceDiagram
     Client->>TokenService: introspect(IntrospectRequest)
     activate TokenService
 
-    alt Parse fails
+    alt Parse thất bại
         TokenService->>JwtUtil: parseToken(request.token)
         JwtUtil-->>TokenService: Exception
         TokenService-->>Client: IntrospectResponse(valid=false)
-    else Parse succeeds
+    else Parse thành công
         TokenService->>JwtUtil: parseToken(request.token)
-        JwtUtil-->>TokenService: SignedJWT (and extract jti)
+        JwtUtil-->>TokenService: SignedJWT (và trích xuất jti)
         
         TokenService->>RedisTemplate: hasKey(blacklistAtKey(jti))
-        RedisTemplate-->>TokenService: blacklisted (true/false)
+        RedisTemplate-->>TokenService: blacklisted (đã bị đưa vào danh sách đen) (true/false)
         
         TokenService-->>Client: IntrospectResponse(valid = !blacklisted)
     end

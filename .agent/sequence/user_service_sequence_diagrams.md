@@ -1,10 +1,10 @@
 # Sequence Diagrams for User Service
 
-This document contains the sequence diagrams for operations within `UserServiceImpl`.
+Tài liệu này chứa các sơ đồ tuần tự cho các hoạt động trong `UserServiceImpl`.
 
-## 1. Get Current User (`getCurrentUser`)
+## 1. Lấy người dùng hiện tại (`getCurrentUser`)
 
-Retrieves the profile of the currently authenticated user based on the JWT token.
+Lấy hồ sơ của người dùng đã xác thực hiện tại dựa trên JWT token.
 
 ```mermaid
 sequenceDiagram
@@ -23,7 +23,7 @@ sequenceDiagram
 
     UserService->>UserRepository: findByEmail(userEmail)
     activate UserRepository
-    UserRepository-->>UserService: UserEntity (or throw NOT_FOUND)
+    UserRepository-->>UserService: UserEntity (hoặc ném ra NOT_FOUND)
     deactivate UserRepository
 
     UserService->>UserService: toDetailResponse(user)
@@ -32,7 +32,7 @@ sequenceDiagram
     deactivate UserService
 ```
 
-## 2. Create User (`createUser`) - Admin
+## 2. Tạo người dùng (`createUser`) - Dành cho Admin
 
 ```mermaid
 sequenceDiagram
@@ -50,13 +50,13 @@ sequenceDiagram
     UserRepository-->>UserService: boolean
     deactivate UserRepository
 
-    alt email already exists
+    alt email đã tồn tại
         UserService-->>Client: throw AppException(EMAIL_ALREADY_EXISTS)
     end
 
     UserService->>RoleRepository: findById(request.roleId)
     activate RoleRepository
-    RoleRepository-->>UserService: RoleEntity (or throw NOT_FOUND)
+    RoleRepository-->>UserService: RoleEntity (hoặc ném ra NOT_FOUND)
     deactivate RoleRepository
 
     UserService->>PasswordEncoder: encode(request.password)
@@ -64,7 +64,7 @@ sequenceDiagram
     PasswordEncoder-->>UserService: encodedPassword
     deactivate PasswordEncoder
 
-    UserService->>UserService: Build UserEntity (isActive=true)
+    UserService->>UserService: Xây dựng UserEntity (isActive=true)
 
     UserService->>UserRepository: save(user)
     activate UserRepository
@@ -77,7 +77,7 @@ sequenceDiagram
     deactivate UserService
 ```
 
-## 3. Update User (`updateUser`) - Admin
+## 3. Cập nhật người dùng (`updateUser`) - Dành cho Admin
 
 ```mermaid
 sequenceDiagram
@@ -91,10 +91,10 @@ sequenceDiagram
 
     UserService->>UserRepository: findById(id)
     activate UserRepository
-    UserRepository-->>UserService: UserEntity (or throw NOT_FOUND)
+    UserRepository-->>UserService: UserEntity (hoặc ném ra NOT_FOUND)
     deactivate UserRepository
 
-    UserService->>UserService: Update generic fields (Name, Phone, DOB, Avatar, isActive)
+    UserService->>UserService: Cập nhật các trường chung (Name, Phone, DOB, Avatar, isActive)
 
     alt request.roleId != null
         UserService->>RoleRepository: findById(request.roleId)
@@ -115,7 +115,7 @@ sequenceDiagram
     deactivate UserService
 ```
 
-## 4. Delete User (`deleteUser`) - Soft Delete
+## 4. Xóa người dùng (`deleteUser`) - Xóa mềm (Soft Delete)
 
 ```mermaid
 sequenceDiagram
@@ -128,7 +128,7 @@ sequenceDiagram
 
     UserService->>UserRepository: findById(id)
     activate UserRepository
-    UserRepository-->>UserService: UserEntity (or throw NOT_FOUND)
+    UserRepository-->>UserService: UserEntity (hoặc ném ra NOT_FOUND)
     deactivate UserRepository
 
     UserService->>UserService: user.setIsActive(false)
@@ -142,7 +142,7 @@ sequenceDiagram
     deactivate UserService
 ```
 
-## 5. Read Users (`getAllUsers`, `getUserById`)
+## 5. Đọc danh sách người dùng (`getAllUsers`, `getUserById`)
 
 ```mermaid
 sequenceDiagram
