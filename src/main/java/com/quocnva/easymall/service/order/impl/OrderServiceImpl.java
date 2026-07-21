@@ -126,10 +126,12 @@ public class OrderServiceImpl implements OrderService {
         feeRequest.setToWardCode(address.getWardCode());
         feeRequest.setWeightGram(totalWeightGram);
 
-        // Mặc định sử dụng phương thức vận chuyển Standard (2) do frontend không cho phép chọn
-        feeRequest.setServiceId(2);
+        // Mặc định sử dụng phương thức vận chuyển Standard (2) do frontend không cho
+        // phép chọn
+        feeRequest.setServiceId(53320);
 
-        com.quocnva.easymall.dtos.response.ghn.GhnShippingFeeResponse feeResponse = ghnShippingService.calculateFee(feeRequest);
+        com.quocnva.easymall.dtos.response.ghn.GhnShippingFeeResponse feeResponse = ghnShippingService
+                .calculateFee(feeRequest);
         BigDecimal originalShippingFee = BigDecimal.valueOf(feeResponse.getTotal());
 
         // Step 7: Validate coupon (nếu có)
@@ -140,8 +142,10 @@ public class OrderServiceImpl implements OrderService {
 
         if (request.getCouponCodes() != null && !request.getCouponCodes().isEmpty()) {
             for (String code : request.getCouponCodes()) {
-                CouponEntity coupon = couponService.validateForCheckout(code, totalProductMoney, userEmail, request.getPaymentMethod());
-                BigDecimal discount = couponServiceImpl.calculateDiscount(coupon, totalProductMoney, originalShippingFee);
+                CouponEntity coupon = couponService.validateForCheckout(code, totalProductMoney, userEmail,
+                        request.getPaymentMethod());
+                BigDecimal discount = couponServiceImpl.calculateDiscount(coupon, totalProductMoney,
+                        originalShippingFee);
                 switch (coupon.getCouponType()) {
                     case SHOP_VOUCHER -> shopDiscountAmount = shopDiscountAmount.add(discount);
                     case FREE_SHIPPING -> shippingDiscountAmount = shippingDiscountAmount.add(discount);

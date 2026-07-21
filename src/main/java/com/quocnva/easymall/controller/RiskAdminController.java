@@ -26,7 +26,7 @@ public class RiskAdminController {
     private final RiskService riskService;
 
     @GetMapping("/rules")
-    @PreAuthorize("hasAuthority('risk_rule:manage')")
+    @PreAuthorize("@permissionChecker.has('risk_rule:manage')")
     public ApiResponse<List<RiskRuleResponse>> getAllRules() {
         return ApiResponse.<List<RiskRuleResponse>>builder()
                 .result(riskService.getAllRules())
@@ -34,7 +34,7 @@ public class RiskAdminController {
     }
 
     @PutMapping("/rules/{ruleCode}")
-    @PreAuthorize("hasAuthority('risk_rule:manage')")
+    @PreAuthorize("@permissionChecker.has('risk_rule:manage')")
     public ApiResponse<RiskRuleResponse> updateRule(
             @PathVariable String ruleCode,
             @Valid @RequestBody RiskRuleUpdateRequest request) {
@@ -44,7 +44,7 @@ public class RiskAdminController {
     }
 
     @GetMapping("/alerts")
-    @PreAuthorize("hasAuthority('risk_alert:view')")
+    @PreAuthorize("@permissionChecker.has('risk_alert:view')")
     public ApiResponse<Page<RiskAlertResponse>> getAlerts(
             @RequestParam(required = false) String status,
             @RequestParam(defaultValue = "0") int page,
@@ -56,7 +56,7 @@ public class RiskAdminController {
     }
 
     @PostMapping("/alerts/{alertId}/resolve")
-    @PreAuthorize("hasAuthority('risk_alert:resolve')")
+    @PreAuthorize("@permissionChecker.has('risk_alert:resolve')")
     public ApiResponse<Void> resolveAlert(
             @PathVariable Long alertId,
             @Valid @RequestBody RiskAlertResolveRequest request) {

@@ -6,4 +6,5 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface UserStatsRepository extends JpaRepository<UserStatsEntity, Long> {
+    long countByIsRestrictedTrue();
 }

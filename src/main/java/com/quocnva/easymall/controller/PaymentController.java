@@ -27,11 +27,15 @@ public class PaymentController {
     @GetMapping("/vnpay/ipn")
     public VnPayIpnResponse vnpayIpn(HttpServletRequest request) {
         try {
-            boolean success = vnPayService.handleIpn(request);
-            if (success) {
+            int result = vnPayService.processVnPayCallback(request);
+            if (result == 1) {
                 return new VnPayIpnResponse("00", "Confirm Success");
+            } else if (result == 2) {
+                return new VnPayIpnResponse("02", "Order already confirmed");
+            } else if (result == 0) {
+                return new VnPayIpnResponse("97", "Invalid signature");
             } else {
-                return new VnPayIpnResponse("02", "Order already confirmed or Invalid signature");
+                return new VnPayIpnResponse("04", "Invalid amount or Order not found");
             }
         } catch (Exception e) {
             return new VnPayIpnResponse("99", "Unknown error");
@@ -40,11 +44,13 @@ public class PaymentController {
 
     @GetMapping("/vnpay/return")
     public void vnpayReturn(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        String responseCode = request.getParameter("vnp_ResponseCode");
-        String transactionStatus = request.getParameter("vnp_TransactionStatus");
         String trackingNumber = request.getParameter("vnp_TxnRef");
         
-        boolean success = "00".equals(responseCode) && "00".equals(transactionStatus);
+        // Gọi processVnPayCallback để verify chữ ký và update DB (phòng trường hợp IPN chưa kịp chạy)
+        int result = vnPayService.processVnPayCallback(request);
+        
+        // Kết quả = 1 (vừa update thành công) hoặc 2 (đã update trước đó) thì xem như success
+        boolean success = (result == 1 || result == 2);
         
         String redirectUrl = frontendResultUrl + "?trackingNumber=" + URLEncoder.encode(trackingNumber != null ? trackingNumber : "", StandardCharsets.UTF_8)
                 + "&success=" + success;

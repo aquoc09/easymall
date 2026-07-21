@@ -5,5 +5,5 @@ import jakarta.servlet.http.HttpServletRequest;
 
 public interface VnPayService {
     String createPaymentUrl(VnPayPaymentRequest request) throws Exception;
-    boolean handleIpn(HttpServletRequest request);
+    int processVnPayCallback(HttpServletRequest request);
 }

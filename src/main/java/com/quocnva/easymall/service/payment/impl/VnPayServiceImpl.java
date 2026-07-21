@@ -84,7 +84,7 @@ public class VnPayServiceImpl implements VnPayService {
     }
 
     @Override
-    public boolean handleIpn(HttpServletRequest request) {
+    public int processVnPayCallback(HttpServletRequest request) {
         Map<String, String> params = new HashMap<>();
         request.getParameterMap().forEach((key, value) -> params.put(key, value[0]));
 
@@ -111,31 +111,38 @@ public class VnPayServiceImpl implements VnPayService {
         
         if (!signValue.equalsIgnoreCase(vnp_SecureHash)) {
             log.error("VNPAY IPN INVALID SIGNATURE");
-            return false;
+            return 0;
         }
 
         if (!vnPayProperties.getVnp_TmnCode().equals(params.get("vnp_TmnCode"))) {
             log.error("VNPAY IPN INVALID TMNCODE");
-            return false;
+            return 0;
         }
 
-        if ("00".equals(params.get("vnp_ResponseCode"))) {
+        String responseCode = params.get("vnp_ResponseCode");
+        String transactionStatus = params.get("vnp_TransactionStatus");
+
+        if ("00".equals(responseCode) && "00".equals(transactionStatus)) {
             String trackingNumber = params.get("vnp_TxnRef");
 
             if (trackingNumber == null || trackingNumber.isEmpty()) {
-                return false;
+                return -1;
             }
 
             OrderEntity order = orderRepository.findByTrackingNumber(trackingNumber).orElse(null);
-            if (order != null && order.getOrderStatus() == OrderStatus.PENDING_PAYMENT) {
-                // Đổi trạng thái sang AWAITING_SHIPMENT và PaymentStatus là PAID
-                order.setOrderStatus(OrderStatus.AWAITING_SHIPMENT);
-                // order.setPaymentStatus(PaymentStatus.PAID); // nếu OrderEntity có trường này
-                orderRepository.save(order);
-                return true;
+            if (order != null) {
+                if (order.getOrderStatus() == OrderStatus.PENDING_PAYMENT) {
+                    // Đổi trạng thái sang AWAITING_SHIPMENT
+                    order.setOrderStatus(OrderStatus.AWAITING_SHIPMENT);
+                    orderRepository.save(order);
+                    return 1;
+                } else if (order.getOrderStatus() != OrderStatus.CANCELLED) {
+                    return 2;
+                }
             }
+            return -1;
         }
 
-        return false;
+        return -1;
     }
 }
